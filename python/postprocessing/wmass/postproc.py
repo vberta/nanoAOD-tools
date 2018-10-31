@@ -9,5 +9,5 @@ from lepSelection import *
 from CSVariables import *
 from Wproducer import *
 
-p=PostProcessor(".",["../../../../NanoAOD/test/test80X_NANO.root"],"","",[leptonSelectModule(),CSAngleModule(), WproducerModule()],provenance=True)
+p=PostProcessor(".",["../../../../NanoAOD/test/test80X_NANO.root"],"","",[leptonSelectModule(),CSAngleModule(), WproducerModule()],provenance=True,outputbranchsel="keep_and_drop.txt")
 p.run()
