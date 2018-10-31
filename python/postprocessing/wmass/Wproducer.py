@@ -16,7 +16,7 @@ def getWvariables(muon, neutrino):
         
     w = m + n
 
-    return w.Pt(), w.Rap(), w.Phi(), w.mass()
+    return w.Pt(), w.Rapidity(), w.Phi(), w.M()
 
 
 class Wproducer(Module):

@@ -27,22 +27,22 @@ class leptonSelection(Module):
         genParticles = Collection(event, "GenPart")
 
         baremuons =[]
-        neutrinos =[]
+        neutrini =[]
         myIdx = -99
         myNuIdx = -99
         
         for i,g in enumerate(genParticles) :
             if not ((g.statusFlags & (1 << 0)) and g.status==1 ): continue
             if abs(g.pdgId)==13: baremuons.append((i,g))# muon is prompt
-            if abs(g.pdgId)==14: neutrinos.append((i,g)) # neutrino is prompt
+            if abs(g.pdgId)==14: neutrini.append((i,g)) # neutrino is prompt
             
 
         #take the most energetic ones in case there are more than 1 muon and/or neutrino
-        if len(baremuons)>0:
+        if len(baremuons)>0 and len(neutrini)>0:
             baremuons.sort(key = lambda x: x[1].pt, reverse=True ) #order by pt in decreasing order
-            neutrinos.sort(key = lambda x: x[1].pt, reverse=True )
+            neutrini.sort(key = lambda x: x[1].pt, reverse=True )
             myIdx = baremuons[0][0]
-            myNuIdx = neutrinos[0][0]
+            myNuIdx = neutrini[0][0]
 
         else: return False #keep control on bare muon only for now
 
@@ -53,7 +53,7 @@ class leptonSelection(Module):
         myIdx = -99
         
         for i,g in enumerate(genParticles) :
-            if abs(g.pdgId)==13 and g.status==1 and (g.statusFlags & (1 << 8)): muons.append((i,g)) # muon is fromHardProcess
+            if abs(g.pdgId)==13 and g.status==1 and (g.statusFlags & (1 << 8)) and (g.statusFlags & (1 << 0)): muons.append((i,g)) # muon is fromHardProcess
 
         if len(muons)>0:
             muons.sort(key = lambda x: x[1].pt, reverse=True ) #order by pt in decreasing order

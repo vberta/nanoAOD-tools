@@ -47,7 +47,7 @@ class CSVariables(Module):
         pass
     def beginFile(self, inputFile, outputFile, inputTree, wrappedOutputTree):
         self.out = wrappedOutputTree
-        
+
         self.out.branch("CStheta_bare", "F");
         self.out.branch("CStheta_dress", "F");
         self.out.branch("CStheta_preFSR", "F");
@@ -73,8 +73,6 @@ class CSVariables(Module):
         preFSRMuonIdx = event.GenPart_preFSRMuonIdx
         dressMuonIdx = event.GenDressedLepton_dressMuonIdx
         
-        print bareMuonIdx
-
 
         CStheta_bare, CSphi_bare = getCSangles(genParticles[bareMuonIdx], genParticles[NeutrinoIdx])
         CStheta_preFSR, CSphi_preFSR = getCSangles(genParticles[preFSRMuonIdx], genParticles[NeutrinoIdx])
