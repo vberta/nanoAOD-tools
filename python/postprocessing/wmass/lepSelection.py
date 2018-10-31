@@ -43,7 +43,9 @@ class leptonSelection(Module):
             neutrini.sort(key = lambda x: x[1].pt, reverse=True )
             myIdx = baremuons[0][0]
             myNuIdx = neutrini[0][0]
-
+        elif len(baremuons)>0 and len(neutrini)==0: 
+            print " no neutrino ", baremuons[0][1].eta, baremuons[0][1].pt, baremuons[0][1].phi      
+            return False
         else: return False #keep control on bare muon only for now
 
         self.out.fillBranch("GenPart_bareMuonIdx",myIdx)
