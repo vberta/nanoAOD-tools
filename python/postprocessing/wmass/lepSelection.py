@@ -13,10 +13,10 @@ class leptonSelection(Module):
         pass
     def beginFile(self, inputFile, outputFile, inputTree, wrappedOutputTree):
         self.out = wrappedOutputTree
-        self.out.branch("GenPart_bareMuonIdx", "I");
-        self.out.branch("GenPart_preFSRMuonIdx", "I");
-        self.out.branch("GenPart_NeutrinoIdx", "I");
-        self.out.branch("GenDressedLepton_dressMuonIdx", "I");
+        self.out.branch("GenPart_bareMuonIdx", "I")
+        self.out.branch("GenPart_preFSRMuonIdx", "I")
+        self.out.branch("GenPart_NeutrinoIdx", "I")
+        self.out.branch("GenDressedLepton_dressMuonIdx", "I")
         
     def endFile(self, inputFile, outputFile, inputTree, wrappedOutputTree):
         pass
@@ -46,7 +46,7 @@ class leptonSelection(Module):
 
 
         self.out.fillBranch("GenPart_bareMuonIdx",myIdx)
-        self.out.fillBranch("GenPart_NeutrinoIdx", myNuIdx);
+        self.out.fillBranch("GenPart_NeutrinoIdx", myNuIdx)
         
         muons =[]
         myIdx = -99

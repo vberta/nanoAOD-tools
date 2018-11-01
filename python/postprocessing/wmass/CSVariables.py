@@ -48,13 +48,13 @@ class CSVariables(Module):
     def beginFile(self, inputFile, outputFile, inputTree, wrappedOutputTree):
         self.out = wrappedOutputTree
 
-        self.out.branch("CStheta_bare", "F");
-        self.out.branch("CStheta_dress", "F");
-        self.out.branch("CStheta_preFSR", "F");
+        self.out.branch("CStheta_bare", "F")
+        self.out.branch("CStheta_dress", "F")
+        self.out.branch("CStheta_preFSR", "F")
 
-        self.out.branch("CSphi_bare", "F");
-        self.out.branch("CSphi_dress", "F");
-        self.out.branch("CSphi_preFSR", "F");
+        self.out.branch("CSphi_bare", "F")
+        self.out.branch("CSphi_dress", "F")
+        self.out.branch("CSphi_preFSR", "F")
         
         
     def endFile(self, inputFile, outputFile, inputTree, wrappedOutputTree):

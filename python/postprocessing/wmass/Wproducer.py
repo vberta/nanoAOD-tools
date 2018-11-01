@@ -29,20 +29,20 @@ class Wproducer(Module):
     def beginFile(self, inputFile, outputFile, inputTree, wrappedOutputTree):
         self.out = wrappedOutputTree
         
-        self.out.branch("Wpt_bare", "F");
-        self.out.branch("Wrap_bare", "F");
-        self.out.branch("Wphi_bare", "F");
-        self.out.branch("Wmass_bare", "F");
+        self.out.branch("Wpt_bare", "F")
+        self.out.branch("Wrap_bare", "F")
+        self.out.branch("Wphi_bare", "F")
+        self.out.branch("Wmass_bare", "F")
 
-        self.out.branch("Wpt_preFSR", "F");
-        self.out.branch("Wrap_preFSR", "F");
-        self.out.branch("Wphi_preFSR", "F");
-        self.out.branch("Wmass_preFSR", "F");
+        self.out.branch("Wpt_preFSR", "F")
+        self.out.branch("Wrap_preFSR", "F")
+        self.out.branch("Wphi_preFSR", "F")
+        self.out.branch("Wmass_preFSR", "F")
 
-        self.out.branch("Wpt_dress", "F");
-        self.out.branch("Wrap_dress", "F");
-        self.out.branch("Wphi_dress", "F");
-        self.out.branch("Wmass_dress", "F");
+        self.out.branch("Wpt_dress", "F")
+        self.out.branch("Wrap_dress", "F")
+        self.out.branch("Wphi_dress", "F")
+        self.out.branch("Wmass_dress", "F")
         
     def endFile(self, inputFile, outputFile, inputTree, wrappedOutputTree):
         pass
