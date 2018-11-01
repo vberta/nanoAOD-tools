@@ -34,19 +34,16 @@ class leptonSelection(Module):
         for i,g in enumerate(genParticles) :
             if not ((g.statusFlags & (1 << 0)) and g.status==1 ): continue
             if abs(g.pdgId)==13: baremuons.append((i,g))# muon is prompt
-            if abs(g.pdgId)==14: neutrini.append((i,g)) # neutrino is prompt
+            if abs(g.pdgId) in [12, 14, 16]: neutrini.append((i,g)) # neutrino is prompt and don't explicitly ask for neutrino flavour
             
+        #look at the flavour of the highest pt neutrino to decide if accept or not the event
+        neutrini.sort(key = lambda x: x[1].pt, reverse=True )
+        if not abs(neutrini[0][1].pdgId) == 14: return False
 
-        #take the most energetic ones in case there are more than 1 muon and/or neutrino
-        if len(baremuons)>0 and len(neutrini)>0:
-            baremuons.sort(key = lambda x: x[1].pt, reverse=True ) #order by pt in decreasing order
-            neutrini.sort(key = lambda x: x[1].pt, reverse=True )
-            myIdx = baremuons[0][0]
-            myNuIdx = neutrini[0][0]
-        elif len(baremuons)>0 and len(neutrini)==0: 
-            print " no neutrino ", baremuons[0][1].eta, baremuons[0][1].pt, baremuons[0][1].phi      
-            return False
-        else: return False #keep control on bare muon only for now
+        baremuons.sort(key = lambda x: x[1].pt, reverse=True ) #order by pt in decreasing order
+        myIdx = baremuons[0][0]
+        myNuIdx = neutrini[0][0]
+
 
         self.out.fillBranch("GenPart_bareMuonIdx",myIdx)
         self.out.fillBranch("GenPart_NeutrinoIdx", myNuIdx);
