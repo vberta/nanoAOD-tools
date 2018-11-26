@@ -33,9 +33,17 @@ def getCSangles(muon, neutrino):
         
         CSAxis = (p1.Vect().Unit()-p2.Vect().Unit()).Unit() #quantise along axis that bisects the boosted beams
         
+        yAxis = (p1.Vect().Unit()).Cross((p2.Vect().Unit())) #other axes
+        yAxis = yAxis.Unit()
+        xAxis = yAxis.Cross(CSAxis)
+        xAxis = xAxis.Unit()
+
         m.Boost(-w.BoostVector())
+
+        phi = math.atan2((m.Vect()*yAxis),(m.Vect()*xAxis))
+        if phi<0: phi = phi + 2*math.pi
         
-        return math.cos(m.Angle(CSAxis)), m.Phi()
+        return math.cos(m.Angle(CSAxis)), phi
 
 
 class CSVariables(Module):

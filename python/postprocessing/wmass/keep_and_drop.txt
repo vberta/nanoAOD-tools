@@ -1,0 +1,12 @@
+drop * 
+keep GenPart*
+keep GenDressedLepton*
+keep Generator*
+keep LHE*
+keep LHEPart*
+keep LHEPdfWeight*
+keep LHEScaleWeight*
+keep LHEWeight*
+keep Muon*
+keep event*
+keep genWeight*
