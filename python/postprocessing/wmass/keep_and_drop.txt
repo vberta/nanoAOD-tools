@@ -10,3 +10,6 @@ keep LHEWeight*
 keep Muon*
 keep event*
 keep genWeight*
+keep MET*
+keep TkMET*
+keep TrigObj*
