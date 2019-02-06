@@ -6,7 +6,7 @@ from PhysicsTools.NanoAODTools.postprocessing.framework.datamodel import Collect
 from PhysicsTools.NanoAODTools.postprocessing.framework.eventloop import Module
 
 def getWvariables(muon, neutrino):
-
+    
     m = ROOT.TLorentzVector()
     n = ROOT.TLorentzVector()
     w = ROOT.TLorentzVector()
@@ -27,8 +27,7 @@ class Wproducer(Module):
     def endJob(self):
         pass
     def beginFile(self, inputFile, outputFile, inputTree, wrappedOutputTree):
-        self.out = wrappedOutputTree
-        
+        self.out = wrappedOutputTree        
         self.out.branch("Wpt_bare", "F")
         self.out.branch("Wrap_bare", "F")
         self.out.branch("Wphi_bare", "F")
@@ -50,19 +49,21 @@ class Wproducer(Module):
     def analyze(self, event):
         """process event, return True (go to next module) or False (fail, go to next event)"""
 
-        genParticles = Collection(event, "GenPart")
-        genDressedLeptons = Collection(event,"GenDressedLepton")
-
         # reobtain the indices of the good muons and the neutrino
-        
-        bareMuonIdx = event.GenPart_bareMuonIdx
-        NeutrinoIdx = event.GenPart_NeutrinoIdx
-        preFSRMuonIdx = event.GenPart_preFSRMuonIdx
-        dressMuonIdx = event.GenDressedLepton_dressMuonIdx
-
-        Wpt_bare, Wrap_bare, Wphi_bare, Wmass_bare = getWvariables(genParticles[bareMuonIdx], genParticles[NeutrinoIdx])
-        Wpt_preFSR, Wrap_preFSR, Wphi_preFSR, Wmass_preFSR = getWvariables(genParticles[preFSRMuonIdx], genParticles[NeutrinoIdx])
-        Wpt_dress, Wrap_dress, Wphi_dress, Wmass_dress = getWvariables(genDressedLeptons[dressMuonIdx], genParticles[NeutrinoIdx])
+        if event.event_genVtype!=0:
+            (Wpt_bare, Wrap_bare, Wphi_bare, Wmass_bare) = (0.0, 0.0, 0.0, 0.0)
+            (Wpt_preFSR, Wrap_preFSR, Wphi_preFSR, Wmass_preFSR) = (0.0, 0.0, 0.0, 0.0)
+            (Wpt_dress, Wrap_dress, Wphi_dress, Wmass_dress) = (0.0, 0.0, 0.0, 0.0)
+        else:
+            genParticles = Collection(event, "GenPart")
+            genDressedLeptons = Collection(event,"GenDressedLepton")
+            bareMuonIdx = event.GenPart_bareMuonIdx
+            NeutrinoIdx = event.GenPart_NeutrinoIdx
+            preFSRMuonIdx = event.GenPart_preFSRMuonIdx
+            dressMuonIdx = event.GenDressedLepton_dressMuonIdx
+            (Wpt_bare, Wrap_bare, Wphi_bare, Wmass_bare) = getWvariables(genParticles[bareMuonIdx], genParticles[NeutrinoIdx])
+            (Wpt_preFSR, Wrap_preFSR, Wphi_preFSR, Wmass_preFSR) = getWvariables(genParticles[preFSRMuonIdx], genParticles[NeutrinoIdx])
+            (Wpt_dress, Wrap_dress, Wphi_dress, Wmass_dress) = getWvariables(genDressedLeptons[dressMuonIdx], genParticles[NeutrinoIdx])
         
         self.out.fillBranch("Wpt_bare",Wpt_bare)
         self.out.fillBranch("Wrap_bare",Wrap_bare)

@@ -13,6 +13,7 @@ class leptonSelection(Module):
         pass
     def beginFile(self, inputFile, outputFile, inputTree, wrappedOutputTree):
         self.out = wrappedOutputTree
+        self.out.branch("event_genVtype", "I")
         self.out.branch("GenPart_bareMuonIdx", "I")
         self.out.branch("GenPart_preFSRMuonIdx", "I")
         self.out.branch("GenPart_NeutrinoIdx", "I")
@@ -38,7 +39,15 @@ class leptonSelection(Module):
             
         #look at the flavour of the highest pt neutrino to decide if accept or not the event
         neutrini.sort(key = lambda x: x[1].pt, reverse=True )
-        if not abs(neutrini[0][1].pdgId) == 14: return False
+        if len(neutrini)==0 or abs(neutrini[0][1].pdgId) != 14:
+            self.out.fillBranch("event_genVtype", -1)
+            self.out.fillBranch("GenPart_bareMuonIdx", -1)
+            self.out.fillBranch("GenPart_NeutrinoIdx", -1)
+            self.out.fillBranch("GenPart_preFSRMuonIdx", -1)      
+            self.out.fillBranch("GenDressedLepton_dressMuonIdx", -1)
+            return True
+        else:
+            self.out.fillBranch("event_genVtype", 0)
 
         baremuons.sort(key = lambda x: x[1].pt, reverse=True ) #order by pt in decreasing order
         myIdx = baremuons[0][0]
