@@ -50,7 +50,7 @@ class Wproducer(Module):
         """process event, return True (go to next module) or False (fail, go to next event)"""
 
         # reobtain the indices of the good muons and the neutrino
-        if event.event_genVtype!=0:
+        if event.genVtype!=0:
             (Wpt_bare, Wrap_bare, Wphi_bare, Wmass_bare) = (0.0, 0.0, 0.0, 0.0)
             (Wpt_preFSR, Wrap_preFSR, Wphi_preFSR, Wmass_preFSR) = (0.0, 0.0, 0.0, 0.0)
             (Wpt_dress, Wrap_dress, Wphi_dress, Wmass_dress) = (0.0, 0.0, 0.0, 0.0)
