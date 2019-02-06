@@ -4,6 +4,14 @@ ROOT.PyConfig.IgnoreCommandLineOptions = True
 from PhysicsTools.NanoAODTools.postprocessing.framework.datamodel import Collection 
 from PhysicsTools.NanoAODTools.postprocessing.framework.eventloop import Module
 
+
+def loose_muon_id(mu):
+    return (abs(mu.eta)<2.4 and mu.pt>10 and abs(mu.dxy)<0.05 and abs(mu.dz)<0.2 and mu.isPFcand and mu.pfRelIso04_all< 0.30)
+def medium_muon_id(mu):
+    return (abs(mu.eta)<2.4 and mu.pt>20 and abs(mu.dxy)<0.05 and abs(mu.dz)<0.2 and mu.mediumId and mu.pfRelIso04_all<=0.10)
+def medium_aiso_muon_id(mu):
+    return (abs(mu.eta)<2.4 and mu.pt>20 and abs(mu.dxy)<0.05 and abs(mu.dz)<0.2 and mu.mediumId and mu.pfRelIso04_all >0.10 and mu.pfRelIso04_all<0.30)
+
 class preselection(Module):
     def __init__(self):
         pass
@@ -15,7 +23,7 @@ class preselection(Module):
         self.out = wrappedOutputTree
         self.out.branch("Muon_idx1", "I")
         self.out.branch("Muon_idx2", "I")
-        self.out.branch("event_Vtype", "I")
+        self.out.branch("Vtype", "I")
 
     def endFile(self, inputFile, outputFile, inputTree, wrappedOutputTree):
         pass
@@ -29,9 +37,9 @@ class preselection(Module):
         # Muon selection
         all_muons = Collection(event, "Muon")
 
-        loose_muons  = [ [mu,imu] for imu,mu in enumerate(all_muons) if (abs(mu.eta)<2.4 and mu.pt>10 and mu.isPFcand and mu.pfRelIso04_all<0.30)]
-        medium_muons = [ [mu,imu] for imu,mu in enumerate(all_muons) if (abs(mu.eta)<2.4 and mu.pt>20 and mu.mediumId and mu.pfRelIso04_all<=0.10)]
-        medium_aiso_muons = [ [mu,imu] for imu,mu in enumerate(all_muons) if (abs(mu.eta)<2.4 and mu.pt>20 and mu.mediumId and mu.pfRelIso04_all>0.10 and mu.pfRelIso04_all<0.30)]
+        loose_muons       = [ [mu,imu] for imu,mu in enumerate(all_muons) if loose_muon_id(mu) ]
+        medium_muons      = [ [mu,imu] for imu,mu in enumerate(all_muons) if medium_muon_id(mu)]
+        medium_aiso_muons = [ [mu,imu] for imu,mu in enumerate(all_muons) if medium_aiso_muon_id(mu)]
 
         loose_muons.sort( key = lambda x: x[0].pt, reverse=True )
         medium_muons.sort(key = lambda x: x[0].pt, reverse=True )
@@ -58,7 +66,7 @@ class preselection(Module):
 
         self.out.fillBranch("Muon_idx1", idx1)
         self.out.fillBranch("Muon_idx2", idx2)
-        self.out.fillBranch("event_Vtype", event_flag)
+        self.out.fillBranch("Vtype", event_flag)
 
         return True
 

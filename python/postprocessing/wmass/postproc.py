@@ -4,6 +4,7 @@ import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True
 from importlib import import_module
 from PhysicsTools.NanoAODTools.postprocessing.framework.postprocessor import PostProcessor
+from PhysicsTools.NanoAODTools.postprocessing.modules.common.puWeightProducer import *
 
 from preselection import *
 from lepSelection import *
@@ -15,8 +16,7 @@ input_file = "/gpfs/ddn/srm/cms/store/mc/RunIISummer16NanoAODv3/DYJetsToLL_Pt-50
 
 p = PostProcessor(outputDir=".",        
                   inputFiles=[input_file],
-                  modules=[preselection(), leptonSelectModule(), CSAngleModule(), WproducerModule()],
-                  #modules=[preselection()],
+                  modules=[puAutoWeight(), preselection(), leptonSelectModule(), CSAngleModule(), WproducerModule()],
                   provenance=True,
                   outputbranchsel="keep_and_drop.txt")
 p.run()
