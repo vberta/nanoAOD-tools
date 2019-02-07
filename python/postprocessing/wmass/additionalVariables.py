@@ -16,7 +16,7 @@ def evaluateMt(mu_pt, mu_phi, met_pt, met_phi) :
     mt = sqrt(2*mu_pt*met_pt*(1-cos(deltaphi)))
     return mt
 
-def evaluateRecoil(mu_pt, mu_phi, met_pt, met_phi) :
+def evaluateRecoilPt(mu_pt, mu_phi, met_pt, met_phi) :
     p_x = mu_pt*sin(mu_phi)
     p_y = mu_pt*cos(mu_phi)
     met_x = met_pt*sin(met_phi)
@@ -25,6 +25,11 @@ def evaluateRecoil(mu_pt, mu_phi, met_pt, met_phi) :
     h_y =  -p_y-met_y
     h = sqrt((h_x)**2+(h_y)**2)
     return h
+
+def evaluateRecoilPhi(mu_phi, met_phi) :
+    hphi = mu_phi+met_phi
+    hphi = hphi % (2*math.pi)
+    return hphi
 
 def evaluateMtRecoBased(mu_pt, mu_phi, met_pt, met_phi) :
     p_x = mu_pt*sin(mu_phi)
@@ -39,17 +44,28 @@ def evaluateMtRecoBased(mu_pt, mu_phi, met_pt, met_phi) :
 
 class additionalVariables(Module):
     def __init__(self):
-        pass
+        # pass
+        self.metdict = {
+        "pf" : "",
+        "gen" : "Gen",
+        "tk" : "Tk",
+        "puppi" : "Puppi"
+        }
+
     def beginJob(self):
         pass
     def endJob(self):
         pass
     def beginFile(self, inputFile, outputFile, inputTree, wrappedOutputTree):
         self.out = wrappedOutputTree
-        self.out.branch("Muon_mt", "F", lenVar="nMuons")
-        self.out.branch("Muon_recoil", "F", lenVar="nMuons")
-        self.out.branch("Muon_mt_tk", "F", lenVar="nMuons")
-        self.out.branch("Muon_recoil_tk", "F", lenVar="nMuons")
+        for met in self.metdict :
+            self.out.branch("Muon_mt_%s" % self.metdict[met], "F", lenVar="nMuons")
+            self.out.branch("Muon_recoil_pt_%s" % self.metdict[met], "F", lenVar="nMuons")
+            self.out.branch("Muon_recoil_phi_%s" % self.metdict[met], "F", lenVar="nMuons")
+
+        # self.out.branch("Muon_mt_tk", "F", lenVar="nMuons")
+        # self.out.branch("Muon_recoil_pt_tk", "F", lenVar="nMuons")
+        # self.out.branch("Muon_recoil_phi_tk", "F", lenVar="nMuons")
         # self.out.branch("Muon_mt_recoil", "F", lenVar="nMuons")#recoil based Mt
 
 
@@ -61,43 +77,58 @@ class additionalVariables(Module):
 
         #collections
         muons = Collection(event, "Muon")
-        met_pt = event.MET_pt
-        met_phi = event.MET_phi
-        met_pt_trk= event.TkMET_pt
-        met_phi_trk = event.TkMET_phi
 
-        #final vectors
-        Mt_vec = []
-        Recoil_vec = []
-        Mt_trk_vec = []
-        Recoil_trk_vec = []
-        # Mt_recoil_vec = []
+        for met in self.metdict :
 
-        for mu in muons :
+            #collections
+            met_pt = getattr(event,"%sMET_pt" % self.metdict[met])
+            met_phi = getattr(event,"%sMET_phi" % self.metdict[met])
+            # met_pt_trk= event.TkMET_pt
+            # met_phi_trk = event.TkMET_phi
 
-            #transverse mass
-            mt = evaluateMt(mu.pt, mu.phi,met_pt,met_phi)
+            #final vectors
+            Mt_vec = []
+            Recoil_pt_vec = []
+            Recoil_phi_vec = []
+            # Mt_trk_vec = []
+            # Recoil_pt_trk_vec = []
+            # Recoil_phi_trk_vec = []
+            # Mt_recoil_vec = []
 
-            #recoil
-            h = evaluateRecoil(mu.pt, mu.phi,met_pt,met_phi)
+            for mu in muons :
 
-            #tk based variables
-            mt_trk = evaluateMt(mu.pt, mu.phi,met_pt_trk,met_phi_trk)
-            h_trk = evaluateRecoil(mu.pt, mu.phi,met_pt_trk,met_phi_trk)
+                #transverse mass
+                mt = evaluateMt(mu.pt, mu.phi,met_pt,met_phi)
 
-            #transvese mass recoil based
-            # mt_h = evaluateMtRecoBased(mu.pt, mu.phi,met_pt,met_phi)
+                #recoil
+                h = evaluateRecoilPt(mu.pt, mu.phi,met_pt,met_phi)
+                hphi = evaluateRecoilPhi( mu.phi,met_phi)
 
-            Mt_vec.append(mt)
-            Recoil_vec.append(h)
-            Mt_trk_vec.append(mt_trk)
-            Recoil_trk_vec.append(h_trk)
-            # Mt_recoil_vec.append(mt_h)
+                #tk based variables
+                # mt_trk = evaluateMt(mu.pt, mu.phi,met_pt_trk,met_phi_trk)
+                # h_trk = evaluateRecoilPt(mu.pt, mu.phi,met_pt_trk,met_phi_trk)
+                # hphi_trk = evaluateRecoilPhi( mu.phi,met_phi_trk)
+                #transvese mass recoil based
+                # mt_h = evaluateMtRecoBased(mu.pt, mu.phi,met_pt,met_phi)
 
-        self.out.fillBranch("Muon_mt", Mt_vec)
-        self.out.fillBranch("Muon_recoil", Recoil_vec)
-        self.out.fillBranch("Muon_mt_tk", Mt_trk_vec)
-        self.out.fillBranch("Muon_recoil_tk", Recoil_trk_vec)
+                Mt_vec.append(mt)
+                Recoil_pt_vec.append(h)
+                Recoil_phi_vec.append(hphi)
+
+                # Mt_trk_vec.append(mt_trk)
+                # Recoil_pt_trk_vec.append(h_trk)
+                # Recoil_phi_trk_vec.append(hphi_trk)
+
+
+                # Mt_recoil_vec.append(mt_h)
+
+            self.out.fillBranch("Muon_mt_%s" % self.metdict[met], Mt_vec)
+            self.out.fillBranch("Muon_recoil_pt_%s" % self.metdict[met], Recoil_pt_vec)
+            self.out.fillBranch("Muon_recoil_phi_%s" % self.metdict[met], Recoil_phi_vec)
+            # self.out.fillBranch("Muon_mt_tk", Mt_trk_vec)
+            # self.out.fillBranch("Muon_recoil_pt_tk", Recoil_pt_trk_vec)
+            # self.out.fillBranch("Muon_recoil_phi_tk", Recoil_phi_trk_vec)
+
         # self.out.fillBranch("Muon_mt_recoil", Mt_recoil_vec)
 
         return True
