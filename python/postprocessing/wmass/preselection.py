@@ -13,7 +13,9 @@ def medium_aiso_muon_id(mu):
     return (abs(mu.eta)<2.4 and mu.pt>20 and abs(mu.dxy)<0.05 and abs(mu.dz)<0.2 and mu.mediumId and mu.pfRelIso04_all >0.10 and mu.pfRelIso04_all<0.30)
 
 class preselection(Module):
-    def __init__(self):
+    def __init__(self, isMC=True, passall=False):
+        self.isMC = isMC
+        self.passall = passall
         pass
     def beginJob(self):
         pass
@@ -21,9 +23,10 @@ class preselection(Module):
         pass
     def beginFile(self, inputFile, outputFile, inputTree, wrappedOutputTree):
         self.out = wrappedOutputTree
-        self.out.branch("Muon_idx1", "I")
-        self.out.branch("Muon_idx2", "I")
-        self.out.branch("Vtype", "I")
+        self.out.branch("Muon_HLT", "I", title="Event passes OR of HLT triggers")
+        self.out.branch("Muon_idx1", "I", title="index of W-like muon / index of Z-like 1st muon")
+        self.out.branch("Muon_idx2", "I", title="index of Z-like 2nd muon")
+        self.out.branch("Vtype", "I", title="0:W-like; 1:Fake-like; 2:Z-like; 3:SS-dimuon")
 
     def endFile(self, inputFile, outputFile, inputTree, wrappedOutputTree):
         pass
@@ -31,8 +34,16 @@ class preselection(Module):
         """process event, return True (go to next module) or False (fail, go to next event)"""
 
         # Trigger bit
-        #triggers = Collection(event, "HLT")       
-        #muon_bits = triggers.IsoMu24
+        if not self.isMC:
+            triggers_OR = ["IsoMu24", "IsoTkMu24"]
+            HLT_pass = False
+            for hlt in triggers_OR:
+                HLT_pass |= getattr(event, "HLT_"+hlt, False)
+            self.out.fillBranch("Muon_HLT", int(HLT_pass))
+            if not HLT_pass and not self.passall:
+                return False
+        else:
+            self.out.fillBranch("Muon_HLT", 1)
 
         # Muon selection
         all_muons = Collection(event, "Muon")
@@ -46,6 +57,7 @@ class preselection(Module):
         medium_aiso_muons.sort(key = lambda x: x[0].pt, reverse=True )
 
         event_flag = -1        
+        (idx1, idx2) = (-1, -1)
         # W-like event: 1 loose, 1 medium
         if len(medium_muons)==1 and len(loose_muons)==1:
             event_flag = 0
@@ -62,11 +74,12 @@ class preselection(Module):
         else:   
             event_flag = -1
 
-        if event_flag not in [0,1,2,3]: return False
-
         self.out.fillBranch("Muon_idx1", idx1)
         self.out.fillBranch("Muon_idx2", idx2)
         self.out.fillBranch("Vtype", event_flag)
+
+        if event_flag not in [0,1,2,3]: 
+            return (False or self.passall)
 
         return True
 
