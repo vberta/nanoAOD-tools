@@ -8,11 +8,11 @@ from PhysicsTools.NanoAODTools.postprocessing.framework.postprocessor import Pos
 
 from PhysicsTools.NanoAODTools.postprocessing.modules.common.puWeightProducer import *
 
-#from PhysicsTools.NanoAODTools.postprocessing.wmass.preselection import *
-#from PhysicsTools.NanoAODTools.postprocessing.wmass.additionalVariables import *
-#from PhysicsTools.NanoAODTools.postprocessing.wmass.lepSelection import *
-#from PhysicsTools.NanoAODTools.postprocessing.wmass.CSVariables import *
-#from PhysicsTools.NanoAODTools.postprocessing.wmass.Wproducer import *
+from PhysicsTools.NanoAODTools.postprocessing.wmass.preselection import *
+from PhysicsTools.NanoAODTools.postprocessing.wmass.additionalVariables import *
+from PhysicsTools.NanoAODTools.postprocessing.wmass.lepSelection import *
+from PhysicsTools.NanoAODTools.postprocessing.wmass.CSVariables import *
+from PhysicsTools.NanoAODTools.postprocessing.wmass.Wproducer import *
 
 parser = argparse.ArgumentParser("")
 parser.add_argument('-jobNum', '--jobNum',   type=int, default=1,      help="")

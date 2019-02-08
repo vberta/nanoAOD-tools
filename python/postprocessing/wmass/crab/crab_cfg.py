@@ -11,8 +11,7 @@ config.section_("JobType")
 config.JobType.pluginName = 'Analysis'
 config.JobType.psetName = 'PSet.py'
 config.JobType.scriptExe = 'crab_script.sh'
-#config.JobType.inputFiles = ['crab_script.py','../../../scripts/haddnano.py','keep_and_drop_MC.txt', 'keep_and_drop_Data.txt']
-config.JobType.inputFiles = ['crab_script.py']
+config.JobType.inputFiles = ['crab_script.py','../../../scripts/haddnano.py','keep_and_drop_MC.txt', 'keep_and_drop_Data.txt']
 config.JobType.scriptArgs = ['isMC=1','passall=0']
 config.JobType.sendPythonFolder	 = True
 config.section_("Data")
