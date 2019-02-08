@@ -2,18 +2,18 @@ import ROOT
 import math
 ROOT.PyConfig.IgnoreCommandLineOptions = True
 
-from PhysicsTools.NanoAODTools.postprocessing.framework.datamodel import Collection 
+from PhysicsTools.NanoAODTools.postprocessing.framework.datamodel import Collection
 from PhysicsTools.NanoAODTools.postprocessing.framework.eventloop import Module
 
 def getWvariables(muon, neutrino):
-    
+
     m = ROOT.TLorentzVector()
     n = ROOT.TLorentzVector()
     w = ROOT.TLorentzVector()
-        
+
     m.SetPtEtaPhiM(muon.pt, muon.eta, muon.phi, 0.105)
     n.SetPtEtaPhiM(neutrino.pt, neutrino.eta, neutrino.phi, 0.)
-        
+
     w = m + n
 
     return w.Pt(), w.Rapidity(), w.Phi(), w.M()
@@ -27,7 +27,7 @@ class Wproducer(Module):
     def endJob(self):
         pass
     def beginFile(self, inputFile, outputFile, inputTree, wrappedOutputTree):
-        self.out = wrappedOutputTree        
+        self.out = wrappedOutputTree
         self.out.branch("Wpt_bare", "F")
         self.out.branch("Wrap_bare", "F")
         self.out.branch("Wphi_bare", "F")
@@ -42,7 +42,7 @@ class Wproducer(Module):
         self.out.branch("Wrap_dress", "F")
         self.out.branch("Wphi_dress", "F")
         self.out.branch("Wmass_dress", "F")
-        
+
     def endFile(self, inputFile, outputFile, inputTree, wrappedOutputTree):
         pass
 
@@ -61,10 +61,19 @@ class Wproducer(Module):
             NeutrinoIdx = event.GenPart_NeutrinoIdx
             preFSRMuonIdx = event.GenPart_preFSRMuonIdx
             dressMuonIdx = event.GenDressedLepton_dressMuonIdx
-            (Wpt_bare, Wrap_bare, Wphi_bare, Wmass_bare) = getWvariables(genParticles[bareMuonIdx], genParticles[NeutrinoIdx])
-            (Wpt_preFSR, Wrap_preFSR, Wphi_preFSR, Wmass_preFSR) = getWvariables(genParticles[preFSRMuonIdx], genParticles[NeutrinoIdx])
-            (Wpt_dress, Wrap_dress, Wphi_dress, Wmass_dress) = getWvariables(genDressedLeptons[dressMuonIdx], genParticles[NeutrinoIdx])
-        
+            if(bareMuonIdx>=0) :
+                (Wpt_bare, Wrap_bare, Wphi_bare, Wmass_bare) = getWvariables(genParticles[bareMuonIdx], genParticles[NeutrinoIdx])
+            else :
+                (Wpt_bare, Wrap_bare, Wphi_bare, Wmass_bare) = (0.0, 0.0, 0.0, 0.0)
+            if(preFSRMuonIdx>=0) :
+                (Wpt_preFSR, Wrap_preFSR, Wphi_preFSR, Wmass_preFSR) = getWvariables(genParticles[preFSRMuonIdx], genParticles[NeutrinoIdx])
+            else :
+                (Wpt_preFSR, Wrap_preFSR, Wphi_preFSR, Wmass_preFSR) = (0.0, 0.0, 0.0, 0.0)
+            if(dressMuonIdx>=0) :
+                (Wpt_dress, Wrap_dress, Wphi_dress, Wmass_dress) = getWvariables(genDressedLeptons[dressMuonIdx], genParticles[NeutrinoIdx])
+            else :
+                (Wpt_dress, Wrap_dress, Wphi_dress, Wmass_dress) = (0.0, 0.0, 0.0, 0.0)
+
         self.out.fillBranch("Wpt_bare",Wpt_bare)
         self.out.fillBranch("Wrap_bare",Wrap_bare)
         self.out.fillBranch("Wphi_bare",Wphi_bare)
@@ -85,4 +94,4 @@ class Wproducer(Module):
 
 # define modules using the syntax 'name = lambda : constructor' to avoid having them loaded when not needed
 
-WproducerModule = lambda : Wproducer() 
+WproducerModule = lambda : Wproducer()
