@@ -18,7 +18,7 @@ parser = argparse.ArgumentParser("")
 parser.add_argument('-jobNum', '--jobNum',    type=int, default=1,      help="")
 parser.add_argument('-passall', '--passall',  type=int, default=0,      help="")
 parser.add_argument('-isMC', '--isMC',        type=int, default=1,      help="")
-parser.add_argument('-dataYear', '--dataYear',type=int, default='2016', help="")
+parser.add_argument('-dataYear', '--dataYear',type=int, default=2016, help="")
 args = parser.parse_args()
 isMC    = args.isMC
 passall = args.passall
