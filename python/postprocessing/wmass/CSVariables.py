@@ -15,7 +15,10 @@ def getCSangles(muon, neutrino):
 
     w = m + n
 
-    sign  = abs(w.Z())/w.Z()
+    if(w.Z()==0):
+	sign=1
+    else :
+	sign  = abs(w.Z())/w.Z()
 
     ProtonMass = 0.938
     BeamEnergy = 6500.000
