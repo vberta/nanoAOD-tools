@@ -19,7 +19,7 @@ def veto_electron_id(ele):
         return (ele.pt>10 and abs(ele.dxy)<0.10 and abs(ele.dz)<0.2 and ele.cutBased>=1 and ele.pfRelIso03_all< 0.30)
 
 class preselection(Module):
-    def __init__(self, isMC=True, passall=False, dataYear="2016"):
+    def __init__(self, isMC=True, passall=False, dataYear=2016):
         self.isMC = isMC
         self.passall = passall
         self.dataYear = str(dataYear)

@@ -18,18 +18,20 @@ parser = argparse.ArgumentParser("")
 parser.add_argument('-jobNum', '--jobNum',   type=int, default=1,      help="")
 parser.add_argument('-passall', '--passall', type=int, default=0,      help="")
 parser.add_argument('-isMC', '--isMC',       type=int, default=1,      help="")
+parser.add_argument('-dataYear', '--dataYear',type=int, default=2016, help="")
 args = parser.parse_args()
 isMC    = args.isMC
 passall = args.passall
-print "isMC =", isMC, ", passall=", passall
+dataYear = args.dataYear
+print "isMC =", isMC, ", passall =", passall, ", dataYear =", dataYear
 
 from PhysicsTools.NanoAODTools.postprocessing.framework.crabhelper import inputFiles,runsAndLumis
 
 modules = []
 if isMC:
-    modules = [puAutoWeight(), preselection(isMC=isMC, passall=passall), additionalVariables(), leptonSelectModule(), CSAngleModule(), WproducerModule()]
+    modules = [puAutoWeight(), preselection(isMC=isMC, passall=passall, dataYear=dataYear), additionalVariables(isMC=isMC), leptonSelectModule(), CSAngleModule(), WproducerModule()]
 else:
-    modules = [preselection(isMC=isMC, passall=passall), additionalVariables()]
+    modules = [preselection(isMC=isMC, passall=passall, dataYear=dataYear), additionalVariables(isMC=isMC)]
 
 p = PostProcessor(outputDir=".",        
                   inputFiles=inputFiles(),
