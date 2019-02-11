@@ -15,7 +15,7 @@ def getCSangles(muon, neutrino):
 
     w = m + n
 
-    if(w.Z()==0):
+    if(w.Z()==0.):
 	sign=1
     else :
 	sign  = abs(w.Z())/w.Z()
@@ -79,7 +79,7 @@ class CSVariables(Module):
             preFSRMuonIdx = event.GenPart_preFSRMuonIdx
             dressMuonIdx = event.GenDressedLepton_dressMuonIdx
             if(bareMuonIdx>=0) :
-                CStheta_bare, CSphi_bare     = getCSangles(genParticles[bareMuonIdx], genParticles[NeutrinoIdx])
+                CStheta_bare, CSphi_bare  = getCSangles(genParticles[bareMuonIdx], genParticles[NeutrinoIdx])
             else :
                 CStheta_bare, CSphi_bare = 0.0, 0.0
             if(preFSRMuonIdx>=0) :
@@ -87,7 +87,7 @@ class CSVariables(Module):
             else :
                 CStheta_preFSR, CSphi_preFSR = 0.0, 0.0
             if(dressMuonIdx>=0) :
-                CStheta_dress, CSphi_dress   = getCSangles(genDressedLeptons[dressMuonIdx], genParticles[NeutrinoIdx])
+                CStheta_dress, CSphi_dress = getCSangles(genDressedLeptons[dressMuonIdx], genParticles[NeutrinoIdx])
             else :
                 CStheta_dress, CSphi_dress = 0.0, 0.0
 

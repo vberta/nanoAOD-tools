@@ -43,13 +43,15 @@ def evaluateMtRecoBased(mu_pt, mu_phi, met_pt, met_phi) :
 
 
 class additionalVariables(Module):
-    def __init__(self):
+    def __init__(self, isMC=True):
         self.metdict = {
-        "pf" : "",
-        "gen" : "Gen",
-        "tk" : "Tk",
-        "puppi" : "Puppi"
-        }
+            "pf" : "",
+            #"gen" : "Gen",
+            "tk" : "Tk",
+            "puppi" : "Puppi"
+            }
+        if isMC:
+            self.metdict["gen"] = "Gen"
         pass
 
     def beginJob(self):
