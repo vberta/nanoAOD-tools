@@ -11,8 +11,6 @@ keep LHEPart*
 keep LHEPdfWeight*
 keep LHEScaleWeight*
 keep LHEWeight*
-keep genWeight*
-keep PSWeight*
 keep PV*
 keep Muon*
 keep MET*
