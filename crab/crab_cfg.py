@@ -39,8 +39,8 @@ if __name__ == '__main__':
     n = 0
     for dataset in content :        
         config.Data.inputDataset = dataset
-        config.General.requestName = dataset.split('/')[1]+'_sub'+str(n)+'_v1'
+        config.General.requestName = dataset.split('/')[1]+'_sub'+str(n)
         config.Data.outputDatasetTag = dataset.split('/')[2]
         print config.General.requestName, '==>', config.Data.outLFNDirBase+'/'+dataset.split('/')[1]+'/'+config.Data.outputDatasetTag
-        crabCommand('submit', config=config)
+        crabCommand('submit', '--dryrun', config=config)
         n += 1

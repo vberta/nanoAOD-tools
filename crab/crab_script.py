@@ -7,6 +7,7 @@ ROOT.PyConfig.IgnoreCommandLineOptions = True
 from PhysicsTools.NanoAODTools.postprocessing.framework.postprocessor import PostProcessor
 
 from PhysicsTools.NanoAODTools.postprocessing.modules.common.puWeightProducer import *
+from PhysicsTools.NanoAODTools.postprocessing.modules.jme.jetmetUncertainties import *
 
 from PhysicsTools.NanoAODTools.postprocessing.wmass.preselection import *
 from PhysicsTools.NanoAODTools.postprocessing.wmass.additionalVariables import *
@@ -25,13 +26,26 @@ passall = args.passall
 dataYear = args.dataYear
 print "isMC =", isMC, ", passall =", passall, ", dataYear =", dataYear
 
+globalTag = ""
+if dataYear==2016:
+    globalTag = "Summer16_23Sep2016V4_MC"
+elif dataYear==2017:
+    globalTag = "Fall17_17Nov2017_V6_MC"
+
 from PhysicsTools.NanoAODTools.postprocessing.framework.crabhelper import inputFiles,runsAndLumis
 
 modules = []
 if isMC:
-    modules = [puAutoWeight(), preselection(isMC=isMC, passall=passall, dataYear=dataYear), additionalVariables(isMC=isMC), leptonSelectModule(), CSAngleModule(), WproducerModule()]
+    modules = [puAutoWeight(), 
+               preselection(isMC=isMC, passall=passall, dataYear=dataYear), 
+               jetmetUncertaintiesProducer(era=str(dataYear), globalTag=globalTag, jesUncertainties=["Total"]),
+               additionalVariables(isMC=isMC, doJESVar=True, doJERVar=True, doUnclustVar=True), 
+               leptonSelectModule(), 
+               CSAngleModule(), 
+               WproducerModule()]
 else:
-    modules = [preselection(isMC=isMC, passall=passall, dataYear=dataYear), additionalVariables(isMC=isMC)]
+    modules = [preselection(isMC=isMC, passall=passall, dataYear=dataYear), 
+               additionalVariables(isMC=isMC)]
 
 p = PostProcessor(outputDir=".",        
                   inputFiles=inputFiles(),
