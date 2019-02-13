@@ -8,6 +8,7 @@ from importlib import import_module
 from PhysicsTools.NanoAODTools.postprocessing.framework.postprocessor import PostProcessor
 from PhysicsTools.NanoAODTools.postprocessing.modules.common.puWeightProducer import *
 from PhysicsTools.NanoAODTools.postprocessing.modules.jme.jetmetUncertainties import *
+from PhysicsTools.NanoAODTools.postprocessing.modules.common.muonScaleResProducer import *
 
 from preselection import *
 from additionalVariables import *
@@ -31,6 +32,11 @@ input_dir = "/gpfs/ddn/srm/cms/store/"
 input_files = []
 modules = []
 
+#Rochester correction for muons
+muonScaleRes = muonScaleRes2016
+if dataYear==2017:
+    muonScaleRes = muonScaleRes2017
+
 if isMC:
     input_files.append( 
         #input_dir+"mc/RunIISummer16NanoAODv3/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/NANOAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3_ext1-v2/120000/06544C90-EFDF-E811-80E6-842B2B6F5D5C.root",
@@ -38,6 +44,7 @@ if isMC:
         )
     modules = [puAutoWeight(), 
                preselection(isMC=isMC, passall=passall, dataYear=dataYear), 
+               muonScaleRes(),
                jetmetUncertaintiesProducer(era=str(dataYear), globalTag=("Summer16_23Sep2016V4_MC" if dataYear==2016 else "Fall17_17Nov2017_V6_MC"), jesUncertainties=["Total"]), 
                additionalVariables(isMC=isMC, doJESVar=True, doJERVar=True, doUnclustVar=True), 
                leptonSelectModule(), 
@@ -48,6 +55,7 @@ else:
         input_dir+"data/Run2016D/DoubleEG/NANOAOD/Nano14Dec2018-v1/280000/481DA5C0-DF96-5640-B5D1-208F52CAC829.root"
         )
     modules = [preselection(isMC=isMC, passall=passall, dataYear=dataYear), 
+               muonScaleRes(),
                additionalVariables(isMC=isMC)]
 
 p = PostProcessor(outputDir=".",        
