@@ -64,9 +64,10 @@ if isMC:
         )
     modules = [puAutoWeight(), 
                preselection(isMC=isMC, passall=passall, dataYear=dataYear), 
+               lepSF(),
                jmeCorrections(),
                muonScaleRes(),
-               additionalVariables(isMC=isMC, doJESVar=True, doJERVar=True, doUnclustVar=True), 
+               additionalVariables(isMC=isMC, doJESVar=True, doJERVar=True, doUnclustVar=True, dataYear=dataYear), 
                leptonSelectModule(), 
                CSAngleModule(), 
                WproducerModule()]
@@ -80,9 +81,8 @@ else:
 
 treecut=("Entry$<" + str(args.maxEvents) if args.maxEvents > 0 else "")
 p = PostProcessor(outputDir=".",  
-                  cut=treecut,      
                   inputFiles=input_files,
-                  cut="Entry$<=10000",
+                  cut=treecut,      
                   modules=modules,
                   provenance=True,
                   outputbranchsel="keep_and_drop_"+("MC" if isMC else "Data")+".txt")
