@@ -21,21 +21,46 @@ parser = argparse.ArgumentParser("")
 parser.add_argument('-jobNum', '--jobNum',    type=int, default=1,      help="")
 parser.add_argument('-passall', '--passall',  type=int, default=0,      help="")
 parser.add_argument('-isMC', '--isMC',        type=int, default=1,      help="")
-parser.add_argument('-maxEvents', '--maxEvents',        type=int, default=-1,	   help="")
-parser.add_argument('-dataYear', '--dataYear',type=int, default=2016,   help="")
+parser.add_argument('-maxEvents', '--maxEvents', type=int, default=-1,	help="")
+parser.add_argument('-dataYear', '--dataYear',type=int, default=2016,    help="")
 parser.add_argument('-jesUncert', '--jesUncert',type=str, default="Total", help="")
-parser.add_argument('-redojec', '--redojec',  type=int, default=0,      help="")
+parser.add_argument('-redojec', '--redojec',  type=int, default=0,       help="")
+parser.add_argument('-runPeriod', '--runPeriod',  type=str, default="B", help="")
 args = parser.parse_args()
 isMC    = args.isMC
 passall = args.passall
 dataYear = args.dataYear
-jecTag=("Summer16_07Aug2017_V11_MC" if dataYear==2016 else "Fall17_17Nov2017_V32_MC")
+
+
+##create a dictionary for JEC tags
+##2017 jec needs to be fixed
+jecTagsMC={'2016' : 'Summer16_07Aug2017_V11_MC', '2017' : 'Fall17_17Nov2017_V32_MC'}
+
+jecTagsDATA={ '2016B' : 'Summer16_07Aug2017BCD_V11_DATA', 
+              '2016C' : 'Summer16_07Aug2017BCD_V11_DATA', 
+              '2016D' : 'Summer16_07Aug2017BCD_V11_DATA', 
+              '2016E' : 'Summer16_07Aug2017EF_V11_DATA', 
+              '2016F' : 'Summer16_07Aug2017EF_V11_DATA', 
+              '2016G' : 'Summer16_07Aug2017GH_V11_DATA', 
+              '2016H' : 'Summer16_07Aug2017GH_V11_DATA', 
+              '2016H' : 'Summer16_07Aug2017GH_V11_DATA', 
+              '2017B' : 'Fall17_17Nov2017B_V32_DATA', 
+              '2017C' : 'Fall17_17Nov2017C_V32_DATA', 
+              '2017D' : 'Fall17_17Nov2017DE_V32_DATA', 
+              '2017E' : 'Fall17_17Nov2017DE_V32_DATA', 
+              '2017F' : 'Fall17_17Nov2017F_V32_DATA', 
+            }   
+
+jecTag=""
+if isMC:
+    jecTag=jecTagsMC[str(dataYear)]
+else:
+    jecTag=jecTagsDATA[str(dataYear) + args.runPeriod]
+
 jmeUncert=[x for x in args.jesUncert.split(",")]
 
 print "isMC =", isMC, ", passall =", passall, ", dataYear =", dataYear, " maxEvents=", args.maxEvents
-
-if isMC:
-    print "JECTag=", jecTag, "jesUncertainties =", jmeUncert, " redoJec=", args.redojec
+print "JECTag=", jecTag, "jesUncertainties =", jmeUncert, " redoJec=", args.redojec
 
 input_dir = "/gpfs/ddn/srm/cms/store/"
 
@@ -76,6 +101,7 @@ else:
         input_dir+ifileDATA
         )
     modules = [preselection(isMC=isMC, passall=passall, dataYear=dataYear), 
+               jmeCorrections(),
                muonScaleRes(),
                additionalVariables(isMC=isMC)]
 
