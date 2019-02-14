@@ -8,12 +8,14 @@ from PhysicsTools.NanoAODTools.postprocessing.framework.postprocessor import Pos
 
 from PhysicsTools.NanoAODTools.postprocessing.modules.common.puWeightProducer import *
 from PhysicsTools.NanoAODTools.postprocessing.modules.jme.jetmetUncertainties import *
+from PhysicsTools.NanoAODTools.postprocessing.modules.common.muonScaleResProducer import *
 
 from PhysicsTools.NanoAODTools.postprocessing.wmass.preselection import *
 from PhysicsTools.NanoAODTools.postprocessing.wmass.additionalVariables import *
 from PhysicsTools.NanoAODTools.postprocessing.wmass.lepSelection import *
 from PhysicsTools.NanoAODTools.postprocessing.wmass.CSVariables import *
 from PhysicsTools.NanoAODTools.postprocessing.wmass.Wproducer import *
+from PhysicsTools.NanoAODTools.postprocessing.modules.common.lepSFProducer import *
 
 parser = argparse.ArgumentParser("")
 parser.add_argument('-jobNum', '--jobNum',   type=int, default=1,      help="")
@@ -21,16 +23,18 @@ parser.add_argument('-passall', '--passall', type=int, default=0,      help="")
 parser.add_argument('-isMC', '--isMC',       type=int, default=1,      help="")
 parser.add_argument('-dataYear', '--dataYear',type=int, default=2016, help="")
 args = parser.parse_args()
-isMC    = args.isMC
+isMC = args.isMC
 passall = args.passall
 dataYear = args.dataYear
 print "isMC =", isMC, ", passall =", passall, ", dataYear =", dataYear
 
-globalTag = ""
-if dataYear==2016:
-    globalTag = "Summer16_23Sep2016V4_MC"
-elif dataYear==2017:
-    globalTag = "Fall17_17Nov2017_V6_MC"
+muonScaleRes = muonScaleRes2016
+if dataYear==2017:
+    muonScaleRes = muonScaleRes2017
+
+jetmetUncertainties = jetmetUncertainties2016
+if dataYear==2017:
+    jetmetUncertainties = jetmetUncertainties2017
 
 from PhysicsTools.NanoAODTools.postprocessing.framework.crabhelper import inputFiles,runsAndLumis
 
@@ -38,13 +42,16 @@ modules = []
 if isMC:
     modules = [puAutoWeight(), 
                preselection(isMC=isMC, passall=passall, dataYear=dataYear), 
-               jetmetUncertaintiesProducer(era=str(dataYear), globalTag=globalTag, jesUncertainties=["Total"]),
-               additionalVariables(isMC=isMC, doJESVar=True, doJERVar=True, doUnclustVar=True), 
+               lepSF(),
+               muonScaleRes(),
+               jetmetUncertainties(),            
+               additionalVariables(isMC=isMC, doJESVar=True, doJERVar=True, doUnclustVar=True, dataYear=dataYear), 
                leptonSelectModule(), 
                CSAngleModule(), 
                WproducerModule()]
 else:
     modules = [preselection(isMC=isMC, passall=passall, dataYear=dataYear), 
+               muonScaleRes(),
                additionalVariables(isMC=isMC)]
 
 p = PostProcessor(outputDir=".",        

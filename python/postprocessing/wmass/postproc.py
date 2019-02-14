@@ -9,6 +9,7 @@ from PhysicsTools.NanoAODTools.postprocessing.framework.postprocessor import Pos
 from PhysicsTools.NanoAODTools.postprocessing.modules.common.puWeightProducer import *
 from PhysicsTools.NanoAODTools.postprocessing.modules.jme.jetmetUncertainties import *
 from PhysicsTools.NanoAODTools.postprocessing.modules.common.muonScaleResProducer import *
+from PhysicsTools.NanoAODTools.postprocessing.modules.common.lepSFProducer import *
 
 from preselection import *
 from additionalVariables import *
@@ -81,6 +82,7 @@ treecut=("Entry$<" + str(args.maxEvents) if args.maxEvents > 0 else "")
 p = PostProcessor(outputDir=".",  
                   cut=treecut,      
                   inputFiles=input_files,
+                  cut="Entry$<=10000",
                   modules=modules,
                   provenance=True,
                   outputbranchsel="keep_and_drop_"+("MC" if isMC else "Data")+".txt")
