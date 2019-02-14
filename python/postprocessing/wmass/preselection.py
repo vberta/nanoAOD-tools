@@ -101,8 +101,8 @@ class preselection(Module):
 
         # Electron selection
         all_electrons  = Collection(event, "Electron")    
-        loose_electrons = [ [ele,iele] for iele,ele in enumerate(all_electrons) if veto_electron_id(ele) ]
-        self.out.fillBranch("nVetoElectrons", len(loose_electrons))
+        veto_electrons = [ [ele,iele] for iele,ele in enumerate(all_electrons) if veto_electron_id(ele) ]
+        self.out.fillBranch("nVetoElectrons", len(veto_electrons))
 
         event_flag = -1        
         (idx1, idx2) = (-1, -1)
