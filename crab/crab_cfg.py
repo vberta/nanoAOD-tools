@@ -81,7 +81,7 @@ if __name__ == '__main__':
         print 'unitsPerJob:  '+str(dataset_unitsPerJob)
         config.Data.inputDataset = dataset_inputDataset
         config.Data.unitsPerJob = dataset_unitsPerJob
-        config.General.requestName = dataset.split('/')[1]+'_task'+str(n)
+        config.General.requestName = dataset.split('/')[1]+'_'+tag+'_task'+str(n)
         config.Data.outputDatasetTag = dataset.split('/')[2]
         print 'requestName:  '+config.General.requestName
         print 'output  ===> ', bcolors.OKBLUE , config.Data.outLFNDirBase+'/'+dataset.split('/')[1]+'/'+config.Data.outputDatasetTag+'/' , bcolors.ENDC
