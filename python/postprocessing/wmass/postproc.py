@@ -9,6 +9,7 @@ from PhysicsTools.NanoAODTools.postprocessing.framework.postprocessor import Pos
 from PhysicsTools.NanoAODTools.postprocessing.modules.common.puWeightProducer import *
 from PhysicsTools.NanoAODTools.postprocessing.modules.jme.jetmetUncertainties import *
 from PhysicsTools.NanoAODTools.postprocessing.modules.common.muonScaleResProducer import *
+from PhysicsTools.NanoAODTools.postprocessing.modules.common.lepSFProducer import *
 
 from preselection import *
 from additionalVariables import *
@@ -37,16 +38,24 @@ muonScaleRes = muonScaleRes2016
 if dataYear==2017:
     muonScaleRes = muonScaleRes2017
 
+jetmetUncertainties = jetmetUncertainties2016
+if dataYear==2017:
+    jetmetUncertainties = jetmetUncertainties2017
+
 if isMC:
-    input_files.append( 
-        #input_dir+"mc/RunIISummer16NanoAODv3/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/NANOAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3_ext1-v2/120000/06544C90-EFDF-E811-80E6-842B2B6F5D5C.root",
-        input_dir+"mc/RunIISummer16NanoAODv3/DYJetsToLL_Pt-50To100_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/NANOAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v2/280000/26DE6A2F-9329-E911-8766-002590DE6E8A.root",
-        )
+    if dataYear==2016:
+        input_files.append( 
+            input_dir+"mc/RunIISummer16NanoAODv3/DYJetsToLL_Pt-50To100_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/NANOAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v2/280000/26DE6A2F-9329-E911-8766-002590DE6E8A.root")
+    else:
+        input_files.append(        
+            input_dir+"/mc/RunIIFall17NanoAODv4/DYJetsToLL_0J_TuneCP5_13TeV-amcatnloFXFX-pythia8/NANOAODSIM/PU2017_12Apr2018_Nano14Dec2018_102X_mc2017_realistic_v6-v1/00000/CE931735-B298-B24F-A127-ADB477C76D83.root"
+            )
     modules = [puAutoWeight(), 
                preselection(isMC=isMC, passall=passall, dataYear=dataYear), 
+               lepSF(),
                muonScaleRes(),
-               jetmetUncertaintiesProducer(era=str(dataYear), globalTag=("Summer16_23Sep2016V4_MC" if dataYear==2016 else "Fall17_17Nov2017_V6_MC"), jesUncertainties=["Total"]), 
-               additionalVariables(isMC=isMC, doJESVar=True, doJERVar=True, doUnclustVar=True), 
+               jetmetUncertainties(),
+               additionalVariables(isMC=isMC, doJESVar=True, doJERVar=True, doUnclustVar=True, dataYear=dataYear), 
                leptonSelectModule(), 
                CSAngleModule(), 
                WproducerModule()]
@@ -60,6 +69,7 @@ else:
 
 p = PostProcessor(outputDir=".",        
                   inputFiles=input_files,
+                  cut="Entry$<=10000",
                   modules=modules,
                   provenance=True,
                   outputbranchsel="keep_and_drop_"+("MC" if isMC else "Data")+".txt")

@@ -74,14 +74,14 @@ class preselection(Module):
         """process event, return True (go to next module) or False (fail, go to next event)"""
 
         # Trigger bit
-        if not self.isMC:
+        if self.isMC==False:
             triggers_OR = ["IsoMu24", "IsoTkMu24"]
-            HLT_pass = False
-            for hlt in triggers_OR:
-                HLT_pass |= getattr(event, "HLT_"+hlt, False)
-            self.out.fillBranch("Muon_HLT", int(HLT_pass))
         else:
-            self.out.fillBranch("Muon_HLT", 1)
+            triggers_OR = ["IsoMu24", "IsoTkMu24"]
+        HLT_pass = False
+        for hlt in triggers_OR:
+            HLT_pass |= getattr(event, "HLT_"+hlt, False)
+        self.out.fillBranch("Muon_HLT", int(HLT_pass))
 
         # MET filters
         met_filters_AND = True
