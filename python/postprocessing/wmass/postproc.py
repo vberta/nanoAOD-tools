@@ -60,7 +60,7 @@ else:
 jmeUncert=[x for x in args.jesUncert.split(",")]
 
 print "isMC =", isMC, ", passall =", passall, ", dataYear =", dataYear, " maxEvents=", args.maxEvents
-print "JECTag=", jecTag, "jesUncertainties =", jmeUncert, " redoJec=", args.redojec
+print "JECTag =", jecTag, "jesUncertainties =", jmeUncert, " redoJec =", args.redojec
 
 input_dir = "/gpfs/ddn/srm/cms/store/"
 

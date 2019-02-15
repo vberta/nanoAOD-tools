@@ -9,6 +9,8 @@ from os.path import isfile, join
 import sys
 import argparse
 
+from CRABClient.UserUtilities import config, getUsernameFromSiteDB
+
 class bcolors:
     HEADER = '\033[95m'
     OKBLUE = '\033[94m'
@@ -42,6 +44,8 @@ import subprocess
 select_first_trial = True
 n_max_files = 2
 
+username = getUsernameFromSiteDB()
+
 fin = open('postcrab_'+samples.rstrip('.txt')+'_'+tag+'.txt', 'r')
 content = fin.readlines()
 sample_dirs = [x.strip() for x in content]
@@ -50,13 +54,13 @@ for sample_dir in sample_dirs:
     script_name = 'haddnano_'+task_name
     fout = open(script_name+'.sh','w')
     fout.write('#!/bin/bash\n\n')
-    fout.write('cd /home/users/bianchini/wmass/CMSSW_10_2_9/src/PhysicsTools/NanoAODTools/crab\n')
+    fout.write('cd /home/users/%s/wmass/CMSSW_10_2_9/src/PhysicsTools/NanoAODTools/crab\n' % username)
     fout.write('source /cvmfs/cms.cern.ch/cmsset_default.sh\n')
     fout.write('eval `scramv1 runtime -sh`\n')
     fout.write('\n')    
     pos = sample_dir.find("cms")
     sample_dir_from_cms = sample_dir[pos-1:] 
-    outdir_master = "/gpfs/ddn/cms/user/bianchi/"+"/NanoAOD-"+tag+"/"
+    outdir_master = ("/gpfs/ddn/cms/user/%s/" % username)+"/NanoAOD-"+tag+"/"
     if not os.path.isdir(outdir_master):
         mkoutdirmastercmd = "mkdir "+outdir_master
         print bcolors.OKBLUE, mkoutdirmastercmd, bcolors.ENDC
@@ -104,7 +108,7 @@ for sample_dir in sample_dirs:
     fout.close()
     os.system('chmod +x '+script_name+'.sh')
     if run=='batch': 
-        submit_to_queue = 'bsub -q local -J '+script_name+' -o '+script_name+'.stdout -cwd `pwd` '+'./'+script_name+'.sh'
+        submit_to_queue = 'bsub -q local -n 8 -J '+script_name+' -o '+script_name+'.stdout -cwd `pwd` '+'./'+script_name+'.sh'
         print bcolors.OKBLUE, submit_to_queue, bcolors.ENDC
         os.system(submit_to_queue)
         time.sleep( 1.0 )
