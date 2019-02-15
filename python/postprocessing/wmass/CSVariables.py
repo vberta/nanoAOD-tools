@@ -9,12 +9,14 @@ from PhysicsTools.NanoAODTools.postprocessing.framework.eventloop import Module
 def getCSangles(muon, neutrino):
     m = ROOT.TLorentzVector()
     n = ROOT.TLorentzVector()
-    w = ROOT.TLorentzVector()
-    m.SetPtEtaPhiM(muon.pt, muon.eta, muon.phi, 0.105)
-    n.SetPtEtaPhiM(neutrino.pt, neutrino.eta, neutrino.phi, 0.)
-
+    w = ROOT.TLorentzVector()    
+    if hasattr(muon, "pt"):
+        m.SetPtEtaPhiM(muon.pt, muon.eta, muon.phi, muon.mass)
+        n.SetPtEtaPhiM(neutrino.pt, neutrino.eta, neutrino.phi, 0.)
+    else:
+        m.SetPtEtaPhiM(muon.Pt(), muon.Eta(), muon.Phi(), muon.M())
+        n.SetPtEtaPhiM(neutrino.Pt(), neutrino.Eta(), neutrino.Phi(), 0.)
     w = m + n
-
     if(w.Z()==0.):
 	sign=1
     else :

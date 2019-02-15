@@ -10,13 +10,14 @@ from PhysicsTools.NanoAODTools.postprocessing.framework.crabhelper import inputF
 from PhysicsTools.NanoAODTools.postprocessing.modules.common.puWeightProducer import *
 from PhysicsTools.NanoAODTools.postprocessing.modules.jme.jetmetUncertainties import *
 from PhysicsTools.NanoAODTools.postprocessing.modules.common.muonScaleResProducer import *
+from PhysicsTools.NanoAODTools.postprocessing.modules.common.lepSFProducer import *
 
 from PhysicsTools.NanoAODTools.postprocessing.wmass.preSelection import *
 from PhysicsTools.NanoAODTools.postprocessing.wmass.additionalVariables import *
 from PhysicsTools.NanoAODTools.postprocessing.wmass.lepSelection import *
 from PhysicsTools.NanoAODTools.postprocessing.wmass.CSVariables import *
 from PhysicsTools.NanoAODTools.postprocessing.wmass.genWproducer import *
-from PhysicsTools.NanoAODTools.postprocessing.modules.common.lepSFProducer import *
+from PhysicsTools.NanoAODTools.postprocessing.wmass.recoZproducer import *
 
 parser = argparse.ArgumentParser("")
 parser.add_argument('-jobNum', '--jobNum',   type=int, default=1,      help="")
@@ -78,11 +79,15 @@ if isMC:
                additionalVariables(isMC=isMC, doJESVar=True, doJERVar=True, doUnclustVar=True, dataYear=dataYear), 
                leptonSelectModule(), 
                CSAngleModule(), 
-               genWproducerModule()]
+               genWproducerModule(),
+               recoZproducer(dataYear=dataYear)
+               ]
 else:
     modules = [preSelection(isMC=isMC, passall=passall, dataYear=dataYear), 
                muonScaleRes(),
-               additionalVariables(isMC=isMC)]
+               additionalVariables(isMC=isMC),
+               recoZproducer(dataYear=dataYear)
+               ]
 
 p = PostProcessor(outputDir=".",        
                   inputFiles=inputFiles(),
