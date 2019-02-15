@@ -70,10 +70,13 @@ modules = []
 #jme corrections
 jmeCorrections=lambda : jetmetUncertaintiesProducer(era=str(dataYear), globalTag=jecTag, jesUncertainties = jmeUncert, redoJEC= args.redojec, saveJets=False)
 
+#pu reweight modules
+puWeightProducer=puWeight
 #Rochester correction for muons
 muonScaleRes = muonScaleRes2016
 if dataYear==2017:
     muonScaleRes = muonScaleRes2017
+    puWeightProducer=puWeight2017
 
 ##This is temporary for testing purpose
 ifileMC = "mc/RunIISummer16NanoAODv3/DYJetsToLL_Pt-50To100_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/NANOAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v2/280000/26DE6A2F-9329-E911-8766-002590DE6E8A.root"
@@ -87,7 +90,7 @@ if isMC:
     input_files.append( 
         input_dir+ifileMC
         )
-    modules = [puAutoWeight(), 
+    modules = [puWeightProducer(), 
                preSelection(isMC=isMC, passall=passall, dataYear=dataYear), 
                lepSF(),
                jmeCorrections(),
