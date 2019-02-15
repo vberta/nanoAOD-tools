@@ -17,11 +17,17 @@ parser = argparse.ArgumentParser("")
 parser.add_argument('-tag', '--tag', type=str, default="TEST",      help="")
 parser.add_argument('-isMC', '--isMC', type=int, default=1,      help="")
 parser.add_argument('-dataYear', '--dataYear',type=int, default=2016, help="")
+parser.add_argument('-jesUncert', '--jesUncert',type=str, default="Total", help="")
+parser.add_argument('-redojec', '--redojec',  type=int, default=0,      help="")
+parser.add_argument('-runPeriod', '--runPeriod',  type=str, default="B", help="")
 parser.add_argument('-run', '--run', type=str, default="submit", help="")
 args = parser.parse_args()
 tag = args.tag
 isMC = args.isMC
 dataYear = args.dataYear
+jesUncert = args.jesUncert
+redojec = args.redojec
+runPeriod = args.runPeriod
 run = args.run
 samples = ('mc' if isMC else 'data')+'samples_'+str(dataYear)+'.txt'
 print "tag =", bcolors.OKGREEN, tag, bcolors.ENDC, \
@@ -39,7 +45,7 @@ config.JobType.pluginName = 'Analysis'
 config.JobType.psetName = 'PSet.py'
 config.JobType.scriptExe = 'crab_script.sh'
 config.JobType.inputFiles = ['crab_script.py','../scripts/haddnano.py','../python/postprocessing/wmass/keep_and_drop_MC.txt', '../python/postprocessing/wmass/keep_and_drop_Data.txt']
-config.JobType.scriptArgs = ['isMC='+('1' if isMC else '0'),'passall=0', 'dataYear='+str(dataYear)]
+config.JobType.scriptArgs = ['isMC='+('1' if isMC else '0'),'passall=0', 'dataYear='+str(dataYear), 'jesUncert='+str(jesUncert), 'redojec='+str(redojec), 'runPeriod=B']
 config.JobType.sendPythonFolder	 = True
 config.section_("Data")
 config.Data.inputDataset = 'TEST'
@@ -79,6 +85,11 @@ if __name__ == '__main__':
         dataset_unitsPerJob = int(dataset.split(',')[1])
         print 'inputDataset: '+dataset_inputDataset
         print 'unitsPerJob:  '+str(dataset_unitsPerJob)
+        if isMC==0:
+            pos = dataset.find('Run'+str(dataYear))
+            runPeriod = dataset[pos+7:pos+8]
+            config.JobType.scriptArgs[-1] = 'runPeriod='+str(runPeriod)            
+        print 'scriptArgs:  ',config.JobType.scriptArgs        
         config.Data.inputDataset = dataset_inputDataset
         config.Data.unitsPerJob = dataset_unitsPerJob
         config.General.requestName = dataset.split('/')[1]+'_'+tag+'_task'+str(n)

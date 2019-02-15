@@ -9,7 +9,7 @@ from PhysicsTools.NanoAODTools.postprocessing.framework.eventloop import Module
 
 def evaluateMt(mu_pt, mu_phi, met_pt, met_phi) :
     muvec = TLorentzVector()
-    muvec.SetPtEtaPhiM(mu_pt,0.0,mu_phi,0.106)
+    muvec.SetPtEtaPhiM(mu_pt,0.0,mu_phi, 0.10571)
     metvec = TLorentzVector()
     metvec.SetPtEtaPhiM(met_pt,0.0,met_phi,0.0)
     hvec = -(muvec + metvec)
@@ -29,7 +29,7 @@ class additionalVariables(Module):
         self.metdict = {
             "pf"    : { "tag" : "MET",      "var"  : [""] },
             "tk"    : { "tag" : "TkMET",    "var"  : [""] },
-            "puppi" : { "tag" : "PuppiMET", "var"  : [""] },
+            #"puppi" : { "tag" : "PuppiMET", "var"  : [""] },
             }
         if isMC:
             self.metdict["gen"] = {"tag" : "GenMET", "var"  : [""]}
