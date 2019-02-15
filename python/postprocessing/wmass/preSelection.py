@@ -18,7 +18,7 @@ def veto_electron_id(ele):
     else:
         return (ele.pt>10 and abs(ele.dxy)<0.10 and abs(ele.dz)<0.2 and ele.cutBased>=1 and ele.pfRelIso03_all< 0.30)
 
-class preselection(Module):
+class preSelection(Module):
     def __init__(self, isMC=True, passall=False, dataYear=2016):
         self.isMC = isMC
         self.passall = passall
@@ -101,8 +101,8 @@ class preselection(Module):
 
         # Electron selection
         all_electrons  = Collection(event, "Electron")    
-        loose_electrons = [ [ele,iele] for iele,ele in enumerate(all_electrons) if veto_electron_id(ele) ]
-        self.out.fillBranch("nVetoElectrons", len(loose_electrons))
+        veto_electrons = [ [ele,iele] for iele,ele in enumerate(all_electrons) if veto_electron_id(ele) ]
+        self.out.fillBranch("nVetoElectrons", len(veto_electrons))
 
         event_flag = -1        
         (idx1, idx2) = (-1, -1)
@@ -133,4 +133,4 @@ class preselection(Module):
 
 # define modules using the syntax 'name = lambda : constructor' to avoid having them loaded when not needed
 
-preselectionModule = lambda : preselection() 
+preSelectionModule = lambda : preSelection() 

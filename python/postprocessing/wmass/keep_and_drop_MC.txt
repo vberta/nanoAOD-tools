@@ -3,11 +3,11 @@ keep event*
 keep run*
 keep Pileup*
 keep luminosityBlock*
-keep GenPart*
-keep GenDressedLepton*
-keep Generator*
-keep LHE*
-keep LHEPart*
+drop GenPart*
+drop GenDressedLepton*
+drop Generator*
+drop LHE*
+drop LHEPart*
 keep LHEPdfWeight*
 keep LHEScaleWeight*
 keep LHEWeight*
@@ -16,4 +16,4 @@ keep Muon*
 keep MET*
 keep TkMET*
 keep GenMET*
-keep PuppiMET*
+drop PuppiMET*
