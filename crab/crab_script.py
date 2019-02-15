@@ -78,7 +78,7 @@ if isMC:
                additionalVariables(isMC=isMC, doJESVar=True, doJERVar=True, doUnclustVar=True, dataYear=dataYear), 
                leptonSelectModule(), 
                CSAngleModule(), 
-               WproducerModule()]
+               genWproducerModule()]
 else:
     modules = [preSelection(isMC=isMC, passall=passall, dataYear=dataYear), 
                muonScaleRes(),

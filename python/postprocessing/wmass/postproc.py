@@ -95,7 +95,7 @@ if isMC:
                additionalVariables(isMC=isMC, doJESVar=True, doJERVar=True, doUnclustVar=True, dataYear=dataYear), 
                leptonSelectModule(), 
                CSAngleModule(), 
-               WproducerModule()]
+               genWproducerModule()]
 else:
     input_files.append(
         input_dir+ifileDATA
