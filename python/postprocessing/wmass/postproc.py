@@ -11,11 +11,11 @@ from PhysicsTools.NanoAODTools.postprocessing.modules.jme.jetmetUncertainties im
 from PhysicsTools.NanoAODTools.postprocessing.modules.common.muonScaleResProducer import *
 from PhysicsTools.NanoAODTools.postprocessing.modules.common.lepSFProducer import *
 
-from preselection import *
+from preSelection import *
 from additionalVariables import *
 from lepSelection import *
 from CSVariables import *
-from Wproducer import *
+from genWproducer import *
 
 parser = argparse.ArgumentParser("")
 parser.add_argument('-jobNum', '--jobNum',    type=int, default=1,      help="")
@@ -68,7 +68,7 @@ input_files = []
 modules = []
 
 #jme corrections
-jmeCorrections=lambda : jetmetUncertaintiesProducer(era=str(dataYear), globalTag=jecTag, jesUncertainties = jmeUncert, redoJEC= args.redojec)
+jmeCorrections=lambda : jetmetUncertaintiesProducer(era=str(dataYear), globalTag=jecTag, jesUncertainties = jmeUncert, redoJEC= args.redojec, saveJets=False)
 
 #Rochester correction for muons
 muonScaleRes = muonScaleRes2016
@@ -88,7 +88,7 @@ if isMC:
         input_dir+ifileMC
         )
     modules = [puAutoWeight(), 
-               preselection(isMC=isMC, passall=passall, dataYear=dataYear), 
+               preSelection(isMC=isMC, passall=passall, dataYear=dataYear), 
                lepSF(),
                jmeCorrections(),
                muonScaleRes(),
@@ -100,7 +100,7 @@ else:
     input_files.append(
         input_dir+ifileDATA
         )
-    modules = [preselection(isMC=isMC, passall=passall, dataYear=dataYear), 
+    modules = [preSelection(isMC=isMC, passall=passall, dataYear=dataYear), 
                jmeCorrections(),
                muonScaleRes(),
                additionalVariables(isMC=isMC)]

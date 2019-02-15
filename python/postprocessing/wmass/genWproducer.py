@@ -19,7 +19,7 @@ def getWvariables(muon, neutrino):
     return w.Pt(), w.Rapidity(), w.Phi(), w.M()
 
 
-class Wproducer(Module):
+class genWproducer(Module):
     def __init__(self):
         pass
     def beginJob(self):
@@ -94,4 +94,4 @@ class Wproducer(Module):
 
 # define modules using the syntax 'name = lambda : constructor' to avoid having them loaded when not needed
 
-WproducerModule = lambda : Wproducer()
+genWproducerModule = lambda : genWproducer()

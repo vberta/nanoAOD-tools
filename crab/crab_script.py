@@ -11,11 +11,11 @@ from PhysicsTools.NanoAODTools.postprocessing.modules.common.puWeightProducer im
 from PhysicsTools.NanoAODTools.postprocessing.modules.jme.jetmetUncertainties import *
 from PhysicsTools.NanoAODTools.postprocessing.modules.common.muonScaleResProducer import *
 
-from PhysicsTools.NanoAODTools.postprocessing.wmass.preselection import *
+from PhysicsTools.NanoAODTools.postprocessing.wmass.preSelection import *
 from PhysicsTools.NanoAODTools.postprocessing.wmass.additionalVariables import *
 from PhysicsTools.NanoAODTools.postprocessing.wmass.lepSelection import *
 from PhysicsTools.NanoAODTools.postprocessing.wmass.CSVariables import *
-from PhysicsTools.NanoAODTools.postprocessing.wmass.Wproducer import *
+from PhysicsTools.NanoAODTools.postprocessing.wmass.genWproducer import *
 from PhysicsTools.NanoAODTools.postprocessing.modules.common.lepSFProducer import *
 
 parser = argparse.ArgumentParser("")
@@ -71,7 +71,7 @@ if dataYear==2017:
 modules = []
 if isMC:
     modules = [puAutoWeight(), 
-               preselection(isMC=isMC, passall=passall, dataYear=dataYear), 
+               preSelection(isMC=isMC, passall=passall, dataYear=dataYear), 
                lepSF(),
                muonScaleRes(),
                jmeCorrections(),
@@ -80,7 +80,7 @@ if isMC:
                CSAngleModule(), 
                WproducerModule()]
 else:
-    modules = [preselection(isMC=isMC, passall=passall, dataYear=dataYear), 
+    modules = [preSelection(isMC=isMC, passall=passall, dataYear=dataYear), 
                muonScaleRes(),
                additionalVariables(isMC=isMC)]
 

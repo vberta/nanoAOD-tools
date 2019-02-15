@@ -18,7 +18,7 @@ def veto_electron_id(ele):
     else:
         return (ele.pt>10 and abs(ele.dxy)<0.10 and abs(ele.dz)<0.2 and ele.cutBased>=1 and ele.pfRelIso03_all< 0.30)
 
-class preselection(Module):
+class preSelection(Module):
     def __init__(self, isMC=True, passall=False, dataYear=2016):
         self.isMC = isMC
         self.passall = passall
@@ -133,4 +133,4 @@ class preselection(Module):
 
 # define modules using the syntax 'name = lambda : constructor' to avoid having them loaded when not needed
 
-preselectionModule = lambda : preselection() 
+preSelectionModule = lambda : preSelection() 
