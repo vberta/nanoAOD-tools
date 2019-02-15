@@ -16,6 +16,7 @@ from additionalVariables import *
 from lepSelection import *
 from CSVariables import *
 from genWproducer import *
+from recoZproducer import *
 
 parser = argparse.ArgumentParser("")
 parser.add_argument('-jobNum', '--jobNum',    type=int, default=1,      help="")
@@ -95,15 +96,19 @@ if isMC:
                additionalVariables(isMC=isMC, doJESVar=True, doJERVar=True, doUnclustVar=True, dataYear=dataYear), 
                leptonSelectModule(), 
                CSAngleModule(), 
-               genWproducerModule()]
+               genWproducerModule(),
+               recoZproducer(dataYear=dataYear)
+               ]
 else:
     input_files.append(
         input_dir+ifileDATA
         )
     modules = [preSelection(isMC=isMC, passall=passall, dataYear=dataYear), 
-               jmeCorrections(),
+               #jmeCorrections(),
                muonScaleRes(),
-               additionalVariables(isMC=isMC)]
+               additionalVariables(isMC=isMC),
+               recoZproducer(dataYear=dataYear)
+               ]
 
 treecut=("Entry$<" + str(args.maxEvents) if args.maxEvents > 0 else "")
 p = PostProcessor(outputDir=".",  
