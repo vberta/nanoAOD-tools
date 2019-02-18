@@ -6,18 +6,13 @@ from PhysicsTools.NanoAODTools.postprocessing.framework.datamodel import Collect
 from PhysicsTools.NanoAODTools.postprocessing.framework.eventloop import Module
 
 def getWvariables(muon, neutrino):
-
     m = ROOT.TLorentzVector()
     n = ROOT.TLorentzVector()
     w = ROOT.TLorentzVector()
-
-    m.SetPtEtaPhiM(muon.pt, muon.eta, muon.phi, 0.105)
+    m.SetPtEtaPhiM(muon.pt, muon.eta, muon.phi, muon.mass)
     n.SetPtEtaPhiM(neutrino.pt, neutrino.eta, neutrino.phi, 0.)
-
     w = m + n
-
     return w.Pt(), w.Rapidity(), w.Phi(), w.M()
-
 
 class genWproducer(Module):
     def __init__(self):
@@ -28,16 +23,14 @@ class genWproducer(Module):
         pass
     def beginFile(self, inputFile, outputFile, inputTree, wrappedOutputTree):
         self.out = wrappedOutputTree
-        self.out.branch("Wpt_bare", "F")
-        self.out.branch("Wrap_bare", "F")
-        self.out.branch("Wphi_bare", "F")
-        self.out.branch("Wmass_bare", "F")
-
+        #self.out.branch("Wpt_bare", "F")
+        #self.out.branch("Wrap_bare", "F")
+        #self.out.branch("Wphi_bare", "F")
+        #self.out.branch("Wmass_bare", "F")
         self.out.branch("Wpt_preFSR", "F")
         self.out.branch("Wrap_preFSR", "F")
         self.out.branch("Wphi_preFSR", "F")
         self.out.branch("Wmass_preFSR", "F")
-
         self.out.branch("Wpt_dress", "F")
         self.out.branch("Wrap_dress", "F")
         self.out.branch("Wphi_dress", "F")
@@ -51,7 +44,7 @@ class genWproducer(Module):
 
         # reobtain the indices of the good muons and the neutrino
         if event.genVtype!=0:
-            (Wpt_bare, Wrap_bare, Wphi_bare, Wmass_bare) = (0.0, 0.0, 0.0, 0.0)
+            #(Wpt_bare, Wrap_bare, Wphi_bare, Wmass_bare) = (0.0, 0.0, 0.0, 0.0)
             (Wpt_preFSR, Wrap_preFSR, Wphi_preFSR, Wmass_preFSR) = (0.0, 0.0, 0.0, 0.0)
             (Wpt_dress, Wrap_dress, Wphi_dress, Wmass_dress) = (0.0, 0.0, 0.0, 0.0)
         else:
@@ -61,10 +54,10 @@ class genWproducer(Module):
             NeutrinoIdx = event.GenPart_NeutrinoIdx
             preFSRMuonIdx = event.GenPart_preFSRMuonIdx
             dressMuonIdx = event.GenDressedLepton_dressMuonIdx
-            if(bareMuonIdx>=0) :
-                (Wpt_bare, Wrap_bare, Wphi_bare, Wmass_bare) = getWvariables(genParticles[bareMuonIdx], genParticles[NeutrinoIdx])
-            else :
-                (Wpt_bare, Wrap_bare, Wphi_bare, Wmass_bare) = (0.0, 0.0, 0.0, 0.0)
+            #if(bareMuonIdx>=0) :
+            #    (Wpt_bare, Wrap_bare, Wphi_bare, Wmass_bare) = getWvariables(genParticles[bareMuonIdx], genParticles[NeutrinoIdx])
+            #else :
+            #    (Wpt_bare, Wrap_bare, Wphi_bare, Wmass_bare) = (0.0, 0.0, 0.0, 0.0)
             if(preFSRMuonIdx>=0) :
                 (Wpt_preFSR, Wrap_preFSR, Wphi_preFSR, Wmass_preFSR) = getWvariables(genParticles[preFSRMuonIdx], genParticles[NeutrinoIdx])
             else :
@@ -74,10 +67,10 @@ class genWproducer(Module):
             else :
                 (Wpt_dress, Wrap_dress, Wphi_dress, Wmass_dress) = (0.0, 0.0, 0.0, 0.0)
 
-        self.out.fillBranch("Wpt_bare",Wpt_bare)
-        self.out.fillBranch("Wrap_bare",Wrap_bare)
-        self.out.fillBranch("Wphi_bare",Wphi_bare)
-        self.out.fillBranch("Wmass_bare",Wmass_bare)
+        #self.out.fillBranch("Wpt_bare",Wpt_bare)
+        #self.out.fillBranch("Wrap_bare",Wrap_bare)
+        #self.out.fillBranch("Wphi_bare",Wphi_bare)
+        #self.out.fillBranch("Wmass_bare",Wmass_bare)
 
         self.out.fillBranch("Wpt_preFSR",Wpt_preFSR)
         self.out.fillBranch("Wrap_preFSR",Wrap_preFSR)
