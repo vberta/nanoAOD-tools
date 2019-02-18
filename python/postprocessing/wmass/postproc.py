@@ -6,32 +6,52 @@ import argparse
 ROOT.PyConfig.IgnoreCommandLineOptions = True
 from importlib import import_module
 from PhysicsTools.NanoAODTools.postprocessing.framework.postprocessor import PostProcessor
+
 from PhysicsTools.NanoAODTools.postprocessing.modules.common.puWeightProducer import *
 from PhysicsTools.NanoAODTools.postprocessing.modules.jme.jetmetUncertainties import *
 from PhysicsTools.NanoAODTools.postprocessing.modules.common.muonScaleResProducer import *
 from PhysicsTools.NanoAODTools.postprocessing.modules.common.lepSFProducer import *
 
-from preSelection import *
-from additionalVariables import *
-from lepSelection import *
-from CSVariables import *
-from genWproducer import *
-from recoZproducer import *
+from PhysicsTools.NanoAODTools.postprocessing.wmass.preSelection import *
+from PhysicsTools.NanoAODTools.postprocessing.wmass.additionalVariables import *
+from PhysicsTools.NanoAODTools.postprocessing.wmass.lepSelection import *
+from PhysicsTools.NanoAODTools.postprocessing.wmass.CSVariables import *
+from PhysicsTools.NanoAODTools.postprocessing.wmass.genWproducer import *
+from PhysicsTools.NanoAODTools.postprocessing.wmass.recoZproducer import *
+
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
 
 parser = argparse.ArgumentParser("")
-parser.add_argument('-jobNum', '--jobNum',    type=int, default=1,      help="")
-parser.add_argument('-passall', '--passall',  type=int, default=0,      help="")
-parser.add_argument('-isMC', '--isMC',        type=int, default=1,      help="")
-parser.add_argument('-maxEvents', '--maxEvents', type=int, default=-1,	help="")
-parser.add_argument('-dataYear', '--dataYear',type=int, default=2016,    help="")
-parser.add_argument('-jesUncert', '--jesUncert',type=str, default="Total", help="")
-parser.add_argument('-redojec', '--redojec',  type=int, default=0,       help="")
-parser.add_argument('-runPeriod', '--runPeriod',  type=str, default="B", help="")
+parser.add_argument('-jobNum',    '--jobNum',   type=int, default=1,      help="")
+parser.add_argument('-crab',      '--crab',     type=int, default=0,      help="")
+parser.add_argument('-passall',   '--passall',  type=int, default=0,      help="")
+parser.add_argument('-isMC',      '--isMC',     type=int, default=1,      help="")
+parser.add_argument('-maxEvents', '--maxEvents',type=int, default=-1,	  help="")
+parser.add_argument('-dataYear',  '--dataYear', type=int, default=2016,   help="")
+parser.add_argument('-jesUncert', '--jesUncert',type=str, default="Total",help="")
+parser.add_argument('-redojec',   '--redojec',  type=int, default=0,      help="")
+parser.add_argument('-runPeriod', '--runPeriod',type=str, default="B",    help="")
 args = parser.parse_args()
-isMC    = args.isMC
-passall = args.passall
-dataYear = args.dataYear
+isMC      = args.isMC
+crab      = args.crab
+passall   = args.passall
+dataYear  = args.dataYear
+maxEvents = args.maxEvents
+runPeriod = args.runPeriod
+redojec   = args.redojec
+jesUncert = args.jesUncert
 
+# run with crab
+if crab:
+    from PhysicsTools.NanoAODTools.postprocessing.framework.crabhelper import inputFiles,runsAndLumis
 
 ##create a dictionary for JEC tags
 ##2017 jec needs to be fixed
@@ -56,12 +76,18 @@ jecTag=""
 if isMC:
     jecTag=jecTagsMC[str(dataYear)]
 else:
-    jecTag=jecTagsDATA[str(dataYear) + args.runPeriod]
+    jecTag=jecTagsDATA[str(dataYear) + runPeriod]
 
-jmeUncert=[x for x in args.jesUncert.split(",")]
+jmeUncert=[x for x in jesUncert.split(",")]
 
-print "isMC =", isMC, ", passall =", passall, ", dataYear =", dataYear, " maxEvents=", args.maxEvents
-print "JECTag =", jecTag, "jesUncertainties =", jmeUncert, " redoJec =", args.redojec
+print "isMC =", bcolors.OKGREEN, isMC, bcolors.ENDC, \
+    "crab =", bcolors.OKGREEN, crab, bcolors.ENDC, \
+    "passall =", bcolors.OKGREEN, passall,  bcolors.ENDC, \
+    "dataYear =",  bcolors.OKGREEN,  dataYear,  bcolors.ENDC, \
+    "maxEvents =", bcolors.OKGREEN, maxEvents, bcolors.ENDC, 
+print "JECTag =", bcolors.OKGREEN, jecTag,  bcolors.ENDC, \
+    "jesUncertainties =", bcolors.OKGREEN, jmeUncert,  bcolors.ENDC, \
+    "redoJec =", bcolors.OKGREEN, redojec,  bcolors.ENDC
 
 input_dir = "/gpfs/ddn/srm/cms/store/"
 
@@ -69,7 +95,7 @@ input_files = []
 modules = []
 
 #jme corrections
-jmeCorrections=lambda : jetmetUncertaintiesProducer(era=str(dataYear), globalTag=jecTag, jesUncertainties = jmeUncert, redoJEC= args.redojec, saveJets=False)
+jmeCorrections=lambda : jetmetUncertaintiesProducer(era=str(dataYear), globalTag=jecTag, jesUncertainties=jmeUncert, redoJEC=redojec, saveJets=False)
 
 #pu reweight modules
 puWeightProducer=puWeight
@@ -96,11 +122,11 @@ if isMC:
                lepSF(),
                jmeCorrections(),
                muonScaleRes(),
+               recoZproducer(dataYear=dataYear, isMC=isMC),
                additionalVariables(isMC=isMC, doJESVar=True, doJERVar=True, doUnclustVar=True, dataYear=dataYear), 
                leptonSelectModule(), 
                CSAngleModule(), 
                genWproducerModule(),
-               recoZproducer(dataYear=dataYear)
                ]
 else:
     input_files.append(
@@ -109,17 +135,20 @@ else:
     modules = [preSelection(isMC=isMC, passall=passall, dataYear=dataYear), 
                #jmeCorrections(),
                muonScaleRes(),
+               recoZproducer(dataYear=dataYear, isMC=isMC),
                additionalVariables(isMC=isMC),
-               recoZproducer(dataYear=dataYear)
                ]
 
-treecut=("Entry$<" + str(args.maxEvents) if args.maxEvents > 0 else "")
+treecut=("Entry$<" + str(maxEvents) if maxEvents > 0 else None)
 p = PostProcessor(outputDir=".",  
-                  inputFiles=input_files,
+                  inputFiles=(input_files if crab==0 else inputFiles()),
                   cut=treecut,      
                   modules=modules,
                   provenance=True,
-                  outputbranchsel="keep_and_drop_"+("MC" if isMC else "Data")+".txt")
+                  outputbranchsel="keep_and_drop_"+("MC" if isMC else "Data")+".txt",
+                  fwkJobReport=(False if crab==0 else True),
+                  jsonInput=(None if crab==0 else runsAndLumis())
+                  )
 p.run()
 
 print "DONE"
