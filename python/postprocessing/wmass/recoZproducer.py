@@ -7,13 +7,16 @@ from PhysicsTools.NanoAODTools.postprocessing.framework.eventloop import Module
 from PhysicsTools.NanoAODTools.postprocessing.wmass.CSVariables import getCSangles
 
 class recoZproducer(Module):
-    def __init__(self, dataYear=2016):
+    def __init__(self, isMC=True, dataYear=2016):
         self.mudict = {
-            "pf"     : { "tag" : "",             "var"  : [""] },
-            "roccor" : { "tag" : "_corrected",   "var"  : [""] },
+            "pf"     : { "tag" : "",             "systs"  : [""] },
+            "roccor" : { "tag" : "_corrected",   "systs"  : [""] },
             }
-        if dataYear==2017:
-            self.mudict["roccor"]["var"] = ["", "_sys_uncertUp",  "_sys_uncertDown"]
+        if isMC and dataYear==2017:
+            self.mudict["roccor"]["systs"] = ["", "_sys_uncertUp",  "_sys_uncertDown"]
+        if isMC:
+             self.mudict["gen_bare"] = { "tag" : "_bare", "systs" : [""] }
+        self.isMC = isMC
         pass
     def beginJob(self):
         pass
@@ -22,15 +25,15 @@ class recoZproducer(Module):
     def beginFile(self, inputFile, outputFile, inputTree, wrappedOutputTree):
         self.out = wrappedOutputTree
         for key_mu,mu in self.mudict.items() :
-            for ivar_mu,var_mu in enumerate(mu["var"]):
-                branch_label = "%s%s" % (mu["tag"], var_mu)
-                self.out.branch("recoZ%s_pt" % branch_label, "F")
-                self.out.branch("recoZ%s_phi" % branch_label, "F")
-                self.out.branch("recoZ%s_y" % branch_label, "F")
-                self.out.branch("recoZ%s_mass" % branch_label, "F")
-                self.out.branch("recoZ%s_CStheta" % branch_label, "F")
-                self.out.branch("recoZ%s_CSphi" % branch_label, "F")
-
+            for ivar_mu,var_mu in enumerate(mu["systs"]):
+                branch_label = ("GenZ" if "gen" in key_mu else "RecoZ")
+                branch_label += ("%s%s" % (mu["tag"], var_mu))
+                self.out.branch("%s_pt" % branch_label, "F")
+                self.out.branch("%s_phi" % branch_label, "F")
+                self.out.branch("%s_y" % branch_label, "F")
+                self.out.branch("%s_mass" % branch_label, "F")
+                self.out.branch("%s_CStheta" % branch_label, "F")
+                self.out.branch("%s_CSphi" % branch_label, "F")
     def endFile(self, inputFile, outputFile, inputTree, wrappedOutputTree):
         pass
 
@@ -38,43 +41,49 @@ class recoZproducer(Module):
         """process event, return True (go to next module) or False (fail, go to next event)"""
 
         muons = Collection(event, "Muon")
-        for keymu,mu in self.mudict.items() :
-            for ivar_mu,var_mu in enumerate(mu["var"]):
-                branch_label = "%s%s" % (mu["tag"], var_mu)
-                
+        if self.isMC:
+            genparticles = Collection(event, "GenPart")
+        for key_mu,mu in self.mudict.items() :
+            for ivar_mu,var_mu in enumerate(mu["systs"]):
+                branch_label = "%s%s" % (mu["tag"], var_mu)                
                 # fill with real values only if there are two muons
                 if event.Vtype in [2,3]:                    
-                    # chose plus and negative muon
-                    (idxP, idxM) = (event.Muon_idx1,event.Muon_idx2)
-                    if muons[event.Muon_idx1].charge<0: (idxP, idxM) = (event.Muon_idx2,event.Muon_idx1) 
-
-                    if var_mu=="":
-                        (muP_pt, muN_pt) = (getattr(muons[idxP], "pt"+mu["tag"]), getattr(muons[idxM], "pt"+mu["tag"]))
-                    else:
-                        if "Up" in var_mu:
-                            (muP_pt, muN_pt) = (max(getattr(muons[idxP], "pt"+mu["tag"]) + getattr(muons[idxP], "pt"+var_mu.rstrip("Up")), 0.0), 
-                                                max(getattr(muons[idxM], "pt"+mu["tag"]) + getattr(muons[idxM], "pt"+var_mu.rstrip("Up")), 0.0))
-                        elif "Down" in var_mu:
-                            (muP_pt, muN_pt) = (max(getattr(muons[idxP], "pt"+mu["tag"]) - getattr(muons[idxP], "pt"+var_mu.rstrip("Down")), 0.0), 
-                                                max(getattr(muons[idxM], "pt"+mu["tag"]) - getattr(muons[idxM], "pt"+var_mu.rstrip("Down")), 0.0))
-                        else:
-                            print "Malformatted systematic in muon rocccor"
+                    # chose plus and negative muon                    
                     muP = ROOT.TLorentzVector()
                     muN = ROOT.TLorentzVector()
-                    muP.SetPtEtaPhiM(muP_pt, muons[idxP].eta, muons[idxP].phi, muons[idxP].mass)
-                    muN.SetPtEtaPhiM(muN_pt, muons[idxM].eta, muons[idxM].phi, muons[idxM].mass)
+                    (idxP, idxN) = (event.Muon_idx1,event.Muon_idx2)
+                    if muons[event.Muon_idx1].charge<0: (idxP, idxN) = (event.Muon_idx2,event.Muon_idx1)                     
+                    # reco Z, based on Muons objects
+                    if "gen" not in key_mu:
+                        if var_mu=="":
+                            (muP_pt, muN_pt) = (getattr(muons[idxP], "pt"+mu["tag"]), getattr(muons[idxN], "pt"+mu["tag"]))
+                        else:
+                            if "Up" in var_mu:
+                                (muP_pt, muN_pt) = (max(getattr(muons[idxP], "pt"+mu["tag"]) + getattr(muons[idxP], "pt"+var_mu.rstrip("Up")), 0.0), 
+                                                    max(getattr(muons[idxN], "pt"+mu["tag"]) + getattr(muons[idxN], "pt"+var_mu.rstrip("Up")), 0.0))
+                            elif "Down" in var_mu:
+                                (muP_pt, muN_pt) = (max(getattr(muons[idxP], "pt"+mu["tag"]) - getattr(muons[idxP], "pt"+var_mu.rstrip("Down")), 0.0), 
+                                                    max(getattr(muons[idxN], "pt"+mu["tag"]) - getattr(muons[idxN], "pt"+var_mu.rstrip("Down")), 0.0))
+                        muP.SetPtEtaPhiM(muP_pt, muons[idxP].eta, muons[idxP].phi, muons[idxP].mass)
+                        muN.SetPtEtaPhiM(muN_pt, muons[idxN].eta, muons[idxN].phi, muons[idxN].mass)
+                    # gen Z, based on gen muons
+                    else:
+                        genIdxP, genIdxN = muons[idxP].genPartIdx, muons[idxN].genPartIdx
+                        if genIdxP>=0 and genIdxP<len(genparticles) and genIdxN>=0 and genIdxN<len(genparticles):
+                            genMuP,genMuN = genparticles[genIdxP],genparticles[genIdxN]
+                            muP.SetPtEtaPhiM(genMuP.pt, genMuP.eta, genMuP.phi, genMuP.mass)
+                            muN.SetPtEtaPhiM(genMuN.pt, genMuN.eta, genMuN.phi, genMuN.mass)
                     Z = muP+muN
                     (Z_pt, Z_phi, Z_y, Z_mass) = (Z.Pt(), Z.Phi(), Z.Rapidity(), Z.M())
                     CStheta, CSphi = getCSangles(muP,muN)
-                else:
-                    (Z_pt, Z_phi, Z_y, Z_mass, CStheta, CSphi) = (0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
-                    
-                self.out.fillBranch("recoZ%s_pt"  % branch_label, Z_pt)
-                self.out.fillBranch("recoZ%s_phi"  % branch_label, Z_phi)
-                self.out.fillBranch("recoZ%s_y"  % branch_label, Z_y)
-                self.out.fillBranch("recoZ%s_mass"  % branch_label, Z_mass)
-                self.out.fillBranch("recoZ%s_CStheta"  % branch_label, CStheta)
-                self.out.fillBranch("recoZ%s_CSphi"  % branch_label, CSphi)
+                    branch_label = ("GenZ" if "gen" in key_mu else "RecoZ")
+                    branch_label += ("%s%s" % (mu["tag"], var_mu))
+                    self.out.fillBranch("%s_pt"  % branch_label, Z_pt)
+                    self.out.fillBranch("%s_phi"  % branch_label, Z_phi)
+                    self.out.fillBranch("%s_y"  % branch_label, Z_y)
+                    self.out.fillBranch("%s_mass"  % branch_label, Z_mass)
+                    self.out.fillBranch("%s_CStheta"  % branch_label, CStheta)
+                    self.out.fillBranch("%s_CSphi"  % branch_label, CSphi)
 
         return True
 

@@ -80,7 +80,8 @@ class preSelection(Module):
             triggers_OR = ["IsoMu24", "IsoTkMu24"]
         HLT_pass = False
         for hlt in triggers_OR:
-            HLT_pass |= getattr(event, "HLT_"+hlt, False)
+            if not hasattr(event, "HLT_"+hlt): continue
+            HLT_pass |= getattr(event, "HLT_"+hlt)
         self.out.fillBranch("Muon_HLT", int(HLT_pass))
 
         # MET filters

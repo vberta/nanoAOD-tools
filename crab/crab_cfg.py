@@ -44,8 +44,8 @@ config.section_("JobType")
 config.JobType.pluginName = 'Analysis'
 config.JobType.psetName = 'PSet.py'
 config.JobType.scriptExe = 'crab_script.sh'
-config.JobType.inputFiles = ['crab_script.py','../scripts/haddnano.py','../python/postprocessing/wmass/keep_and_drop_MC.txt', '../python/postprocessing/wmass/keep_and_drop_Data.txt']
-config.JobType.scriptArgs = ['isMC='+('1' if isMC else '0'),'passall=0', 'dataYear='+str(dataYear), 'jesUncert='+str(jesUncert), 'redojec='+str(redojec), 'runPeriod=B']
+config.JobType.inputFiles = ['../python/postprocessing/wmass/postproc.py','../scripts/haddnano.py','../python/postprocessing/wmass/keep_and_drop_MC.txt', '../python/postprocessing/wmass/keep_and_drop_Data.txt']
+config.JobType.scriptArgs = ['crab=1', 'isMC='+('1' if isMC else '0'), 'dataYear='+str(dataYear), 'redojec='+str(redojec), 'runPeriod=B']
 config.JobType.sendPythonFolder	 = True
 config.section_("Data")
 config.Data.inputDataset = 'TEST'
@@ -56,8 +56,10 @@ config.Data.unitsPerJob = 5
 if not isMC:
     if dataYear==2016:
         config.Data.lumiMask = 'Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt'
-    else:
+    elif  dataYear==2017:
         config.Data.lumiMask = 'Cert_294927-306462_13TeV_EOY2017ReReco_Collisions17_JSON.txt'
+    else:
+        config.Data.lumiMask = 'TEST'
     print "Using lumiMask", config.Data.lumiMask
 config.Data.outLFNDirBase = '/store/user/%s/NanoAOD-%s' % (getUsernameFromSiteDB(), tag)
 config.Data.publication = False
@@ -88,7 +90,13 @@ if __name__ == '__main__':
         if isMC==0:
             pos = dataset.find('Run'+str(dataYear))
             runPeriod = dataset[pos+7:pos+8]
-            config.JobType.scriptArgs[-1] = 'runPeriod='+str(runPeriod)            
+            ipos = -1
+            for iar,ar in enumerate(config.JobType.scriptArgs):
+                if 'runPeriod' in ar:
+                    ipos = iar
+                    print 'Argument %s (%s) will be set to %s' % (iar, ar, runPeriod)
+                    break
+            config.JobType.scriptArgs[iar] = 'runPeriod='+str(runPeriod)            
         print 'scriptArgs:  ',config.JobType.scriptArgs        
         config.Data.inputDataset = dataset_inputDataset
         config.Data.unitsPerJob = dataset_unitsPerJob
