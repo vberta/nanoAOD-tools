@@ -2,6 +2,7 @@
 import os, sys
 import ROOT
 import argparse
+import subprocess
 
 ROOT.PyConfig.IgnoreCommandLineOptions = True
 from importlib import import_module
@@ -96,6 +97,11 @@ input_files = []
 modules = []
 
 #jme corrections
+#untar the zipped jec files
+jesDatadir = os.environ['CMSSW_BASE'] + "/src/PhysicsTools/NanoAODTools/data/jme/"
+jesInputFile = jesDatadir + jecTag + ".tar.gz"
+print "Using JEC files from:", jesInputFile
+subprocess.call(['tar', "-xzvf", jesInputFile, "-C", jesDatadir])
 if isMC:
     jmeCorrections=lambda : jetmetUncertaintiesProducer(era=str(dataYear), globalTag=jecTag, jesUncertainties=jmeUncert, redoJEC=redojec, saveJets=False)
 else:
