@@ -2,6 +2,7 @@
 import os, sys
 import ROOT
 import argparse
+import subprocess
 
 ROOT.PyConfig.IgnoreCommandLineOptions = True
 from importlib import import_module
@@ -94,6 +95,13 @@ input_dir = "/gpfs/ddn/srm/cms/store/"
 
 input_files = []
 modules = []
+
+#untar the zipped jec files when submitting crab jobs
+if crab :
+    jesDatadir = os.environ['CMSSW_BASE'] + "/src/PhysicsTools/NanoAODTools/data/jme/"
+    jesInputFile = jesDatadir + jecTag + ".tar.gz"
+    print "Using JEC files from:", jesInputFile
+    subprocess.call(['tar', "-xzvf", jesInputFile, "-C", jesDatadir])
 
 #jme corrections
 if isMC:
