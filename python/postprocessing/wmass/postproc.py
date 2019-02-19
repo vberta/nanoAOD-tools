@@ -9,6 +9,7 @@ from PhysicsTools.NanoAODTools.postprocessing.framework.postprocessor import Pos
 
 from PhysicsTools.NanoAODTools.postprocessing.modules.common.puWeightProducer import *
 from PhysicsTools.NanoAODTools.postprocessing.modules.jme.jetmetUncertainties import *
+from PhysicsTools.NanoAODTools.postprocessing.modules.jme.jetRecalib import *
 from PhysicsTools.NanoAODTools.postprocessing.modules.common.muonScaleResProducer import *
 from PhysicsTools.NanoAODTools.postprocessing.modules.common.lepSFProducer import *
 
@@ -95,15 +96,19 @@ input_files = []
 modules = []
 
 #jme corrections
-jmeCorrections=lambda : jetmetUncertaintiesProducer(era=str(dataYear), globalTag=jecTag, jesUncertainties=jmeUncert, redoJEC=redojec, saveJets=False)
+if isMC:
+    jmeCorrections=lambda : jetmetUncertaintiesProducer(era=str(dataYear), globalTag=jecTag, jesUncertainties=jmeUncert, redoJEC=redojec, saveJets=False)
+else:
+    jmeCorrections=lambda : jetRecalib(globalTag=jecTag)
 
 #pu reweight modules
-puWeightProducer=puWeight
+puWeightProducer=puWeight_2016
 #Rochester correction for muons
 muonScaleRes = muonScaleRes2016
 if dataYear==2017:
     muonScaleRes = muonScaleRes2017
-    puWeightProducer=puWeight2017
+    puWeightProducer=puWeight_2017
+
 
 ##This is temporary for testing purpose
 ifileMC = "mc/RunIISummer16NanoAODv3/DYJetsToLL_Pt-50To100_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/NANOAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v2/280000/26DE6A2F-9329-E911-8766-002590DE6E8A.root"
@@ -133,7 +138,7 @@ else:
         input_dir+ifileDATA
         )
     modules = [preSelection(isMC=isMC, passall=passall, dataYear=dataYear), 
-               #jmeCorrections(),
+               jmeCorrections(),
                muonScaleRes(),
                recoZproducer(dataYear=dataYear, isMC=isMC),
                additionalVariables(isMC=isMC),
