@@ -74,15 +74,16 @@ if __name__ == '__main__':
     print 'Creating file '+'postcrab-'+tag+'.txt for crab submission '+tag
     fout = open('postcrab_'+samples.rstrip('.txt')+'_'+tag+'.txt', 'w') 
 
-    print 'Cleaning the ../data/jme/ directory from unnecessary .txt files'
-    backup_dir = '../../../../../JEC/'
-    jec_dir = '../data/jme/'
-    if not os.path.isdir(backup_dir):
-        os.system('mkdir '+backup_dir)
-    os.system('mv '+jec_dir+'Summer16*txt '+backup_dir)
-    os.system('mv '+jec_dir+'Fall17*txt '+backup_dir)
-    os.system('ls -tr '+jec_dir)
-    os.system('du -h '+jec_dir)
+    if run in ['submit', 'dryrun']:
+        print 'Cleaning the ../data/jme/ directory from unnecessary .txt files'
+        backup_dir = '../../../../../JEC/'
+        jec_dir = '../data/jme/'
+        if not os.path.isdir(backup_dir):
+            os.system('mkdir '+backup_dir)
+        os.system('mv '+jec_dir+'Summer16*txt '+backup_dir)
+        os.system('mv '+jec_dir+'Fall17*txt '+backup_dir)
+        os.system('ls -tr '+jec_dir)
+        os.system('du -h '+jec_dir)
 
     f = open(samples) 
     content = f.readlines()
@@ -110,7 +111,7 @@ if __name__ == '__main__':
         print 'scriptArgs:  ',config.JobType.scriptArgs        
         config.Data.inputDataset = dataset_inputDataset
         config.Data.unitsPerJob = dataset_unitsPerJob
-        config.General.requestName = dataset.split('/')[1]+'_'+tag+'_task'+str(n)
+        config.General.requestName = dataset.split('/')[1]+'_'+tag+'_task_'+str(n)
         config.Data.outputDatasetTag = dataset.split('/')[2]
         print 'requestName:  '+config.General.requestName
         print 'output  ===> ', bcolors.OKBLUE , config.Data.outLFNDirBase+'/'+dataset.split('/')[1]+'/'+config.Data.outputDatasetTag+'/' , bcolors.ENDC
@@ -119,8 +120,6 @@ if __name__ == '__main__':
         elif run=='dryrun':
             crabCommand('submit', '--dryrun', config=config)
         elif run=='debug':            
-            print "Doing nothing with CRAB. Create postcrab file"
-            f.close()
             continue
         crablog = open('crab_'+config.General.requestName+'/crab.log', 'r').readlines()
         crabloglines = [x.strip() for x in crablog]
@@ -135,7 +134,8 @@ if __name__ == '__main__':
         n += 1
     fout.close()
 
-    print 'Restore the '+jec_dir
-    os.system('mv '+backup_dir+'Summer16*txt '+jec_dir)
-    os.system('mv '+backup_dir+'Fall17*txt '+jec_dir)
+    if run in ['submit', 'dryrun']:
+        print 'Restore the '+jec_dir
+        os.system('mv '+backup_dir+'Summer16*txt '+jec_dir)
+        os.system('mv '+backup_dir+'Fall17*txt '+jec_dir)
     
