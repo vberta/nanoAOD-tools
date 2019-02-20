@@ -7,15 +7,8 @@ from PhysicsTools.NanoAODTools.postprocessing.framework.eventloop import Module
 from PhysicsTools.NanoAODTools.postprocessing.wmass.CSVariables import getCSangles
 
 class recoZproducer(Module):
-    def __init__(self, isMC=True, dataYear=2016):
-        self.mudict = {
-            "pf"     : { "tag" : "",             "systs"  : [""] },
-            "roccor" : { "tag" : "_corrected",   "systs"  : [""] },
-            }
-        if isMC and dataYear==2017:
-            self.mudict["roccor"]["systs"] = ["", "_sys_uncertUp",  "_sys_uncertDown"]
-        if isMC:
-             self.mudict["gen_bare"] = { "tag" : "_bare", "systs" : [""] }
+    def __init__(self, isMC=True, mudict={}):
+        self.mudict = mudict
         self.isMC = isMC
         pass
     def beginJob(self):

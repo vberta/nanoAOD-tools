@@ -1,2 +1,2 @@
 #!/bin/sh
-qstat -u `whoami` | grep haddnano
+qstat -u `whoami` | grep "19"

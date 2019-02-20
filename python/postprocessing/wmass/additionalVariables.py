@@ -17,28 +17,9 @@ def evaluateMt(mu_pt, mu_phi, mu_mass, met_pt, met_phi) :
     return  (mt, h_pt, h_phi, met_par, met_per) 
 
 class additionalVariables(Module):
-    def __init__(self, isMC=True, doJESVar=False, doJERVar=False, doUnclustVar=False, dataYear=2016):
-        self.mudict = {
-            "pf"     : { "tag" : "",             "systs"  : [""] },
-            "roccor" : { "tag" : "_corrected",   "systs"  : [""] },
-            }
-        if isMC and dataYear==2017:
-            self.mudict["roccor"]["systs"] = ["", "_sys_uncertUp",  "_sys_uncertDown"]
-
-        self.metdict = {
-            "pf"    : { "tag" : "MET",      "systs"  : [""] },
-            "tk"    : { "tag" : "TkMET",    "systs"  : [""] },
-            #"puppi" : { "tag" : "PuppiMET", "systs"  : [""] },
-            }
-        if isMC:
-            self.mudict["gen_bare"] = { "tag" : "_bare",  "systs" : [""] }
-            self.metdict["gen"] = {"tag" : "GenMET", "systs"  : [""]}
-            if doJERVar:
-                self.metdict["pf"]["systs"].extend( ["_nom", "_jerUp", "_jerDown"] )
-            if doJESVar:
-                self.metdict["pf"]["systs"].extend( ["_jesTotalUp", "_jesTotalDown"] )
-            if doUnclustVar:
-                self.metdict["pf"]["systs"].extend( ["_unclustEnUp", "_unclustEnDown"] )
+    def __init__(self, isMC=True, mudict={}, metdict={}):
+        self.mudict = mudict
+        self.metdict = metdict
         self.isMC = isMC
         pass
 
