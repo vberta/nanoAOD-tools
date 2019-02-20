@@ -1,2 +1,2 @@
 #!/bin/sh
-qstat -u `whoami` | grep "h" | grep "_"
+qstat -u `whoami` | grep "19"
