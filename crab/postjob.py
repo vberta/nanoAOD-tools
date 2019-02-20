@@ -64,7 +64,7 @@ for sample_dir in sample_dirs:
         ext = '_'+sample_dir.split('/')[-3][idx_ext:idx_ext+4]
     else:
         print "No extensions found in", sample_dir.split('/')[-3]
-    job_name = 'hn_'+task_name
+    job_name = task_name.replace('_', '')
     script_name = 'hn_'+task_name
     fout = open(script_name+'.sh','w')
     fout.write('#!/bin/bash\n\n')
@@ -134,7 +134,7 @@ for sample_dir in sample_dirs:
     fout.close()
     if run=='batch': 
         os.system('chmod +x '+script_name+'.sh')
-        submit_to_queue = 'bsub -q local -n 8 -J '+script_name+' -o '+path+'/'+script_name+'.stdout'+' -e '+path+'/'+script_name+'.stderr'+' -cwd `pwd` '+'./'+script_name+'.sh'
+        submit_to_queue = 'bsub -q local -n 8 -J '+job_name+' -o '+path+'/'+script_name+'.stdout'+' -e '+path+'/'+script_name+'.stderr'+' -cwd `pwd` '+'./'+script_name+'.sh'
         print bcolors.OKBLUE, submit_to_queue, bcolors.ENDC
         os.system(submit_to_queue)
         time.sleep( 1.0 )
