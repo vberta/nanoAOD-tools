@@ -40,16 +40,21 @@ class leptonSelection(Module):
         #look at the flavour of the highest pt neutrino to decide if accept or not the event
         neutrini.sort(key = lambda x: x[1].pt, reverse=True )
 
+        evt_flag = -1
+        if   len(neutrini)>0 and abs(neutrini[0][1].pdgId)==14: evt_flag = 0 # nu_mu
+        elif len(neutrini)>0 and abs(neutrini[0][1].pdgId)==12: evt_flag = 1 # nu_e
+        elif len(neutrini)>0 and abs(neutrini[0][1].pdgId)==16: evt_flag = 2 # nu_tau
+
         # return if there are no neutrini or the highest-pt nu is not of type mu
-        if len(neutrini)==0 or abs(neutrini[0][1].pdgId) != 14:
-            self.out.fillBranch("genVtype", -1)
+        if len(neutrini)==0 or abs(neutrini[0][1].pdgId) != 14:            
+            self.out.fillBranch("genVtype", evt_flag)
             self.out.fillBranch("GenPart_bareMuonIdx", -1)
             self.out.fillBranch("GenPart_NeutrinoIdx", -1)
             self.out.fillBranch("GenPart_preFSRMuonIdx", -1)      
             self.out.fillBranch("GenDressedLepton_dressMuonIdx", -1)
             return True
         else:
-            self.out.fillBranch("genVtype", 0)
+            self.out.fillBranch("genVtype", evt_flag)
 
         baremuons.sort(key = lambda x: x[1].pt, reverse=True ) #order by pt in decreasing order
         myIdx = baremuons[0][0]

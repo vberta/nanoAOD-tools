@@ -52,22 +52,28 @@ class genWproducer(Module):
             dressMuonIdx = event.GenDressedLepton_dressMuonIdx
             if(bareMuonIdx>=0) :
                 (Wpt_bare, Wrap_bare, Wphi_bare, Wmass_bare) = getWvariables(genParticles[bareMuonIdx], genParticles[NeutrinoIdx])
-                self.out.fillBranch("Wpt_bare",Wpt_bare)
-                self.out.fillBranch("Wrap_bare",Wrap_bare)
-                self.out.fillBranch("Wphi_bare",Wphi_bare)
-                self.out.fillBranch("Wmass_bare",Wmass_bare)
+            else:
+                (Wpt_bare, Wrap_bare, Wphi_bare, Wmass_bare) = (0., 0., 0., 0.)
+            self.out.fillBranch("Wpt_bare",Wpt_bare)
+            self.out.fillBranch("Wrap_bare",Wrap_bare)
+            self.out.fillBranch("Wphi_bare",Wphi_bare)
+            self.out.fillBranch("Wmass_bare",Wmass_bare)
             if(preFSRMuonIdx>=0) :
                 (Wpt_preFSR, Wrap_preFSR, Wphi_preFSR, Wmass_preFSR) = getWvariables(genParticles[preFSRMuonIdx], genParticles[NeutrinoIdx])
-                self.out.fillBranch("Wpt_preFSR",Wpt_preFSR)
-                self.out.fillBranch("Wrap_preFSR",Wrap_preFSR)
-                self.out.fillBranch("Wphi_preFSR",Wphi_preFSR)
-                self.out.fillBranch("Wmass_preFSR",Wmass_preFSR)
+            else:
+                (Wpt_preFSR, Wrap_preFSR, Wphi_preFSR, Wmass_preFSR) =  (0., 0., 0., 0.)
+            self.out.fillBranch("Wpt_preFSR",Wpt_preFSR)
+            self.out.fillBranch("Wrap_preFSR",Wrap_preFSR)
+            self.out.fillBranch("Wphi_preFSR",Wphi_preFSR)
+            self.out.fillBranch("Wmass_preFSR",Wmass_preFSR)
             if(dressMuonIdx>=0) :
                 (Wpt_dress, Wrap_dress, Wphi_dress, Wmass_dress) = getWvariables(genDressedLeptons[dressMuonIdx], genParticles[NeutrinoIdx])
-                self.out.fillBranch("Wpt_dress",Wpt_dress)
-                self.out.fillBranch("Wrap_dress",Wrap_dress)
-                self.out.fillBranch("Wphi_dress",Wphi_dress)
-                self.out.fillBranch("Wmass_dress",Wmass_dress)
+            else:
+                (Wpt_dress, Wrap_dress, Wphi_dress, Wmass_dress) =  (0., 0., 0., 0.)
+            self.out.fillBranch("Wpt_dress",Wpt_dress)
+            self.out.fillBranch("Wrap_dress",Wrap_dress)
+            self.out.fillBranch("Wphi_dress",Wphi_dress)
+            self.out.fillBranch("Wmass_dress",Wmass_dress)
 
         return True
 
