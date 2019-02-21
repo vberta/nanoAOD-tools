@@ -41,9 +41,9 @@ class leptonSelection(Module):
         neutrini.sort(key = lambda x: x[1].pt, reverse=True )
 
         evt_flag = -1
-        if   len(neutrini)>0 and abs(neutrini[0][1].pdgId)==14: evt_flag = 0 # nu_mu
-        elif len(neutrini)>0 and abs(neutrini[0][1].pdgId)==12: evt_flag = 1 # nu_e
-        elif len(neutrini)>0 and abs(neutrini[0][1].pdgId)==16: evt_flag = 2 # nu_tau
+        if   len(neutrini)>0 and abs(neutrini[0][1].pdgId)==12: evt_flag = 12 # nu_e
+        elif len(neutrini)>0 and abs(neutrini[0][1].pdgId)==14: evt_flag = 14 # nu_mu
+        elif len(neutrini)>0 and abs(neutrini[0][1].pdgId)==16: evt_flag = 16 # nu_tau
 
         # return if there are no neutrini or the highest-pt nu is not of type mu
         if len(neutrini)==0 or abs(neutrini[0][1].pdgId) != 14:            

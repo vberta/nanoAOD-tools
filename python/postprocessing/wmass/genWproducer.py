@@ -42,8 +42,12 @@ class genWproducer(Module):
     def analyze(self, event):
         """process event, return True (go to next module) or False (fail, go to next event)"""
 
+        (Wpt_bare, Wrap_bare, Wphi_bare, Wmass_bare) = (0., 0., 0., 0.)
+        (Wpt_preFSR, Wrap_preFSR, Wphi_preFSR, Wmass_preFSR) =  (0., 0., 0., 0.)
+        (Wpt_dress, Wrap_dress, Wphi_dress, Wmass_dress) =  (0., 0., 0., 0.)
+
         # reobtain the indices of the good muons and the neutrino
-        if event.genVtype==0:
+        if event.genVtype==14:
             genParticles = Collection(event, "GenPart")
             genDressedLeptons = Collection(event,"GenDressedLepton")
             bareMuonIdx = event.GenPart_bareMuonIdx
@@ -52,28 +56,23 @@ class genWproducer(Module):
             dressMuonIdx = event.GenDressedLepton_dressMuonIdx
             if(bareMuonIdx>=0) :
                 (Wpt_bare, Wrap_bare, Wphi_bare, Wmass_bare) = getWvariables(genParticles[bareMuonIdx], genParticles[NeutrinoIdx])
-            else:
-                (Wpt_bare, Wrap_bare, Wphi_bare, Wmass_bare) = (0., 0., 0., 0.)
-            self.out.fillBranch("Wpt_bare",Wpt_bare)
-            self.out.fillBranch("Wrap_bare",Wrap_bare)
-            self.out.fillBranch("Wphi_bare",Wphi_bare)
-            self.out.fillBranch("Wmass_bare",Wmass_bare)
             if(preFSRMuonIdx>=0) :
                 (Wpt_preFSR, Wrap_preFSR, Wphi_preFSR, Wmass_preFSR) = getWvariables(genParticles[preFSRMuonIdx], genParticles[NeutrinoIdx])
-            else:
-                (Wpt_preFSR, Wrap_preFSR, Wphi_preFSR, Wmass_preFSR) =  (0., 0., 0., 0.)
-            self.out.fillBranch("Wpt_preFSR",Wpt_preFSR)
-            self.out.fillBranch("Wrap_preFSR",Wrap_preFSR)
-            self.out.fillBranch("Wphi_preFSR",Wphi_preFSR)
-            self.out.fillBranch("Wmass_preFSR",Wmass_preFSR)
             if(dressMuonIdx>=0) :
                 (Wpt_dress, Wrap_dress, Wphi_dress, Wmass_dress) = getWvariables(genDressedLeptons[dressMuonIdx], genParticles[NeutrinoIdx])
-            else:
-                (Wpt_dress, Wrap_dress, Wphi_dress, Wmass_dress) =  (0., 0., 0., 0.)
-            self.out.fillBranch("Wpt_dress",Wpt_dress)
-            self.out.fillBranch("Wrap_dress",Wrap_dress)
-            self.out.fillBranch("Wphi_dress",Wphi_dress)
-            self.out.fillBranch("Wmass_dress",Wmass_dress)
+        
+        self.out.fillBranch("Wpt_bare",Wpt_bare)
+        self.out.fillBranch("Wrap_bare",Wrap_bare)
+        self.out.fillBranch("Wphi_bare",Wphi_bare)
+        self.out.fillBranch("Wmass_bare",Wmass_bare)
+        self.out.fillBranch("Wpt_preFSR",Wpt_preFSR)
+        self.out.fillBranch("Wrap_preFSR",Wrap_preFSR)
+        self.out.fillBranch("Wphi_preFSR",Wphi_preFSR)
+        self.out.fillBranch("Wmass_preFSR",Wmass_preFSR)
+        self.out.fillBranch("Wpt_dress",Wpt_dress)
+        self.out.fillBranch("Wrap_dress",Wrap_dress)
+        self.out.fillBranch("Wphi_dress",Wphi_dress)
+        self.out.fillBranch("Wmass_dress",Wmass_dress)
 
         return True
 

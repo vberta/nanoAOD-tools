@@ -69,7 +69,7 @@ class CSVariables(Module):
 
     def analyze(self, event):
         """process event, return True (go to next module) or False (fail, go to next event)"""
-        if event.genVtype != 0 :
+        if event.genVtype != 14 :
             CStheta_bare, CSphi_bare     = 0.0, 0.0
             CStheta_preFSR, CSphi_preFSR = 0.0, 0.0
             CStheta_dress, CSphi_dress   = 0.0, 0.0
