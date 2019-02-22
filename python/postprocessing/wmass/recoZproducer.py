@@ -44,8 +44,8 @@ class recoZproducer(Module):
                     # chose plus and negative muon                    
                     muP = ROOT.TLorentzVector()
                     muN = ROOT.TLorentzVector()
-                    (idxP, idxN) = (event.Muon_idx1,event.Muon_idx2)
-                    if muons[event.Muon_idx1].charge<0: (idxP, idxN) = (event.Muon_idx2,event.Muon_idx1)                     
+                    (idxP, idxN) = (event.Idx_mu1,event.Idx_mu2)
+                    if muons[event.Idx_mu1].charge<0: (idxP, idxN) = (event.Idx_mu2,event.Idx_mu1)                     
                     # reco Z, based on Muons objects
                     if "gen" not in key_mu:
                         if var_mu=="":

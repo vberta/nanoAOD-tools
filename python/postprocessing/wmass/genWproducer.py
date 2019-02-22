@@ -42,10 +42,10 @@ class genWproducer(Module):
         if event.genVtype==14:
             genParticles = Collection(event, "GenPart")
             genDressedLeptons = Collection(event,"GenDressedLepton")
-            bareMuonIdx = event.GenPart_bareMuonIdx
-            NeutrinoIdx = event.GenPart_NeutrinoIdx
-            preFSRMuonIdx = event.GenPart_preFSRMuonIdx
-            dressMuonIdx = event.GenDressedLepton_dressMuonIdx
+            bareMuonIdx = event.Idx_mu_bare
+            NeutrinoIdx = event.Idx_nu
+            preFSRMuonIdx = event.Idx_mu_preFSR
+            dressMuonIdx = event.Idx_mu_dress
             if(bareMuonIdx>=0) :
                 (Wpt_bare, Wrap_bare, Wphi_bare, Wmass_bare), Wcharge_bare = getWvariables(genParticles[bareMuonIdx], genParticles[NeutrinoIdx]), genParticles[bareMuonIdx].pdgId
             if(preFSRMuonIdx>=0) :

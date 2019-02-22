@@ -14,10 +14,10 @@ class leptonSelection(Module):
     def beginFile(self, inputFile, outputFile, inputTree, wrappedOutputTree):
         self.out = wrappedOutputTree
         self.out.branch("genVtype", "I")
-        self.out.branch("GenPart_bareMuonIdx", "I")
-        self.out.branch("GenPart_preFSRMuonIdx", "I")
-        self.out.branch("GenPart_NeutrinoIdx", "I")
-        self.out.branch("GenDressedLepton_dressMuonIdx", "I")
+        self.out.branch("Idx_mu_bare", "I")
+        self.out.branch("Idx_mu_preFSR", "I")
+        self.out.branch("Idx_mu_dress", "I")
+        self.out.branch("Idx_nu", "I")
         
     def endFile(self, inputFile, outputFile, inputTree, wrappedOutputTree):
         pass
@@ -48,10 +48,10 @@ class leptonSelection(Module):
         # return if there are no neutrini or the highest-pt nu is not of type mu
         if len(neutrini)==0 or abs(neutrini[0][1].pdgId) != 14:            
             self.out.fillBranch("genVtype", evt_flag)
-            self.out.fillBranch("GenPart_bareMuonIdx", -1)
-            self.out.fillBranch("GenPart_NeutrinoIdx", -1)
-            self.out.fillBranch("GenPart_preFSRMuonIdx", -1)      
-            self.out.fillBranch("GenDressedLepton_dressMuonIdx", -1)
+            self.out.fillBranch("Idx_mu_bare", -1)
+            self.out.fillBranch("Idx_mu_preFSR", -1)      
+            self.out.fillBranch("Idx_mu_dress", -1)
+            self.out.fillBranch("Idx_nu", -1)
             return True
         else:
             self.out.fillBranch("genVtype", evt_flag)
@@ -60,8 +60,8 @@ class leptonSelection(Module):
         myIdx = baremuons[0][0]
         myNuIdx = neutrini[0][0]
 
-        self.out.fillBranch("GenPart_bareMuonIdx",myIdx)
-        self.out.fillBranch("GenPart_NeutrinoIdx", myNuIdx)
+        self.out.fillBranch("Idx_mu_bare",myIdx)
+        self.out.fillBranch("Idx_nu", myNuIdx)
         
         muons =[]
         myIdx = -99
@@ -84,7 +84,7 @@ class leptonSelection(Module):
                     if myMuon.genPartIdxMother < 0:
                         break 
                     
-        self.out.fillBranch("GenPart_preFSRMuonIdx",myIdx)
+        self.out.fillBranch("Idx_mu_preFSR",myIdx)
 
         ############################################## dressed muon selection from GenDressedLepton collection
         genDressedLeptons = Collection(event,"GenDressedLepton")
@@ -98,7 +98,7 @@ class leptonSelection(Module):
             dressmuons.sort(key = lambda x: x[1].pt, reverse=True ) #order by pt in decreasing order
             myIdx = dressmuons[0][0]
 
-        self.out.fillBranch("GenDressedLepton_dressMuonIdx",myIdx)
+        self.out.fillBranch("Idx_mu_dress",myIdx)
 
         
         return True

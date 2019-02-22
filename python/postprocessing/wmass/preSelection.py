@@ -61,9 +61,9 @@ class preSelection(Module):
         pass
     def beginFile(self, inputFile, outputFile, inputTree, wrappedOutputTree):
         self.out = wrappedOutputTree
-        self.out.branch("Muon_HLT", "I", title="Event passes OR of HLT triggers")
-        self.out.branch("Muon_idx1", "I", title="index of W-like muon / index of Z-like 1st muon")
-        self.out.branch("Muon_idx2", "I", title="index of Z-like 2nd muon")
+        self.out.branch("HLT_SingleMuon", "B", title="Event passes OR of HLT triggers")
+        self.out.branch("Idx_mu1", "I", title="index of W-like muon / index of Z-like 1st muon")
+        self.out.branch("Idx_mu2", "I", title="index of Z-like 2nd muon")
         self.out.branch("Vtype", "I", title="0:W-like; 1:Fake-like; 2:Z-like; 3:SS-dimuon")
         self.out.branch("MET_filters", "I", title="AND of all MET filters")
         self.out.branch("nVetoElectrons", "I", title="Number of veto electrons")
@@ -82,7 +82,7 @@ class preSelection(Module):
         for hlt in triggers_OR:
             if not hasattr(event, "HLT_"+hlt): continue
             HLT_pass |= getattr(event, "HLT_"+hlt)
-        self.out.fillBranch("Muon_HLT", int(HLT_pass))
+        self.out.fillBranch("HLT_SingleMuon", int(HLT_pass))
 
         # MET filters
         met_filters_AND = True
@@ -123,8 +123,8 @@ class preSelection(Module):
         else:   
             event_flag = -1
 
-        self.out.fillBranch("Muon_idx1", idx1)
-        self.out.fillBranch("Muon_idx2", idx2)
+        self.out.fillBranch("Idx_mu1", idx1)
+        self.out.fillBranch("Idx_mu2", idx2)
         self.out.fillBranch("Vtype", event_flag)
 
         if event_flag not in [0,1,2,3]: 
