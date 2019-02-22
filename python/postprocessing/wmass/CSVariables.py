@@ -1,11 +1,14 @@
 import ROOT
 import math
+import copy
+
 ROOT.PyConfig.IgnoreCommandLineOptions = True
 
 from PhysicsTools.NanoAODTools.postprocessing.framework.datamodel import Collection
 from PhysicsTools.NanoAODTools.postprocessing.framework.eventloop import Module
 
 #global definition of CS angles
+'''
 def getCSangles(muon, neutrino):
     m = ROOT.TLorentzVector()
     n = ROOT.TLorentzVector()
@@ -47,9 +50,54 @@ def getCSangles(muon, neutrino):
     if phi<0: phi = phi + 2*math.pi
 
     return math.cos(m.Angle(CSAxis)), phi
+'''
+
+def azimuth(phi):
+    if phi<0.0:
+        phi += 2*math.pi
+    return phi
+
+def getCSangles(muon,neutrino):
+
+    Lp4  = ROOT.TLorentzVector(0.,0.,0.,0.)
+    Np4 = ROOT.TLorentzVector(0.,0.,0.,0.)
+    if hasattr(muon, "pt"):
+        Lp4.SetPtEtaPhiM(muon.pt, muon.eta, muon.phi, muon.mass)
+        Np4.SetPtEtaPhiM(neutrino.pt, neutrino.eta, neutrino.phi, 0.)
+    else:
+        Lp4.SetPtEtaPhiM(muon.Pt(), muon.Eta(), muon.Phi(), muon.M())
+        Np4.SetPtEtaPhiM(neutrino.Pt(), neutrino.Eta(), neutrino.Phi(), 0.)
+    Wp4 = Lp4 + Np4
+    
+    Wp4_rot = copy.deepcopy(Wp4)
+    Lp4_rot = copy.deepcopy(Lp4)
+
+    # align W/L along x axis
+    Wp4_rot.RotateZ( -Wp4.Phi() )
+    Lp4_rot.RotateZ( -Wp4.Phi() )
+
+    # first boost
+    boostL = Wp4_rot.BoostVector()
+    boostL.SetX(0.0)
+    boostL.SetY(0.0)
+    Lp4_rot.Boost( -boostL )
+    Wp4_rot.Boost( -boostL )
+
+    # second boost
+    boostT = Wp4_rot.BoostVector()
+    Lp4_rot.Boost( -boostT )
+
+    # the CS frame defines the z-axis according to the W pz in the lab 
+    flip_z = -1 if Wp4.Rapidity()<0.0 else +1
+
+    # compute PS point
+    ps = (Lp4_rot.CosTheta()*flip_z, azimuth(Lp4_rot.Phi()*flip_z) )
+    return ps
+
 
 class CSVariables(Module):
-    def __init__(self):
+    def __init__(self,  Wtypes=['bare', 'preFSR', 'dress']):
+        self.Wtypes = Wtypes
         pass
     def beginJob(self):
         pass
@@ -57,12 +105,9 @@ class CSVariables(Module):
         pass
     def beginFile(self, inputFile, outputFile, inputTree, wrappedOutputTree):
         self.out = wrappedOutputTree
-        self.out.branch("CStheta_bare", "F")
-        self.out.branch("CStheta_dress", "F")
-        self.out.branch("CStheta_preFSR", "F")
-        self.out.branch("CSphi_bare", "F")
-        self.out.branch("CSphi_dress", "F")
-	self.out.branch("CSphi_preFSR", "F")
+        for t in self.Wtypes:
+            for v in ['theta', 'phi']:
+                self.out.branch("CS_"+t+"_"+v, "F")
 
     def endFile(self, inputFile, outputFile, inputTree, wrappedOutputTree):
         pass
@@ -93,14 +138,14 @@ class CSVariables(Module):
             else :
                 CStheta_dress, CSphi_dress = 0.0, 0.0
 
-        self.out.fillBranch("CStheta_bare",CStheta_bare)
-        self.out.fillBranch("CSphi_bare",CSphi_bare)
+        self.out.fillBranch("CS_bare_theta",CStheta_bare)
+        self.out.fillBranch("CS_bare_phi",CSphi_bare)
 
-        self.out.fillBranch("CStheta_preFSR",CStheta_preFSR)
-        self.out.fillBranch("CSphi_preFSR",CSphi_preFSR)
+        self.out.fillBranch("CS_preFSR_theta",CStheta_preFSR)
+        self.out.fillBranch("CS_preFSR_phi",CSphi_preFSR)
 
-        self.out.fillBranch("CStheta_dress",CStheta_dress)
-        self.out.fillBranch("CSphi_dress",CSphi_dress)
+        self.out.fillBranch("CS_dress_theta",CStheta_dress)
+        self.out.fillBranch("CS_dress_phi",CSphi_dress)
 
         return True
 
