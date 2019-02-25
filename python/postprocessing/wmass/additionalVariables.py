@@ -98,12 +98,12 @@ class additionalVariables(Module):
                             # Reco muons
                             if "gen" not in key_mu:
                                 if var_mu=="":
-                                    mu_pt = getattr(muon, "pt"+mu["tag"])
+                                    mu_pt = getattr(muon, mu["tag"]+"pt")
                                 else:
                                     if "Up" in var_mu:
-                                        mu_pt = max(getattr(muon, "pt"+mu["tag"]) + getattr(muon, "pt"+var_mu.rstrip("Up")), 0.0)
+                                        mu_pt = max(getattr(muon, mu["tag"] + "pt") + getattr(muon, var_mu.rstrip("Up") + "pt"), 0.0)
                                     elif "Down" in var_mu:
-                                        mu_pt = max(getattr(muon, "pt"+mu["tag"]) - getattr(muon, "pt"+var_mu.rstrip("Down")), 0.0)
+                                        mu_pt = max(getattr(muon, mu["tag"] + "pt") - getattr(muon, var_mu.rstrip("Down") + "pt"), 0.0)
                                 muon_phi,muon_mass = muon.phi,muon.mass
                             # Gen muons
                             else:
@@ -122,12 +122,12 @@ class additionalVariables(Module):
                                 nuLike_muon = muons[event.Idx_mu2] if imuon==event.Idx_mu1 else muons[event.Idx_mu1]
                                 if "gen" not in key_mu:
                                     if var_mu=="":
-                                        nuLike_mu_pt = getattr(nuLike_muon, "pt"+mu["tag"])
+                                        nuLike_mu_pt = getattr(nuLike_muon, mu["tag"] + "pt")
                                     else:
                                         if "Up" in var_mu:
-                                            nuLike_mu_pt = max(getattr(nuLike_muon, "pt"+mu["tag"]) + getattr(nuLike_muon, "pt"+var_mu.rstrip("Up")), 0.0)
+                                            nuLike_mu_pt = max(getattr(nuLike_muon, mu["tag"] + "pt") + getattr(nuLike_muon, var_mu.rstrip("Up") + "pt"), 0.0)
                                         elif "Down" in var_mu:
-                                            nuLike_mu_pt = max(getattr(nuLike_muon, "pt"+mu["tag"]) - getattr(nuLike_muon, "pt"+var_mu.rstrip("Down")), 0.0)
+                                            nuLike_mu_pt = max(getattr(nuLike_muon, mu["tag"]+"pt") - getattr(nuLike_muon, var_mu.rstrip("Down") + "pt"), 0.0)
                                     nuLike_muon_phi,nuLike_muon_mass = nuLike_muon.phi,nuLike_muon.mass
                                 else:
                                     nuLike_genIdx = nuLike_muon.genPartIdx
