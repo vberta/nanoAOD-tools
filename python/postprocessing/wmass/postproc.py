@@ -137,13 +137,13 @@ if dataYear==2017:
 # muon dictionary
 mudict = {
     "pf"     : { "tag" : "",             "systs"  : [""] },
-    "roccor" : { "tag" : "_corrected",   "systs"  : [""] },
+    "roccor" : { "tag" : "corrected_",   "systs"  : [""] },
     }
 if isMC:
     mudict["gen_bare"] = { "tag" : "_bare",  "systs" : [""] }
     # these exist only for 2017
     if dataYear==2017:
-        mudict["roccor"]["systs"] = ["", "_sys_uncertUp",  "_sys_uncertDown"]    
+        mudict["roccor"]["systs"] = ["", "sys_uncertUp_",  "sys_uncertDown_"]    
 
 ################################################
 

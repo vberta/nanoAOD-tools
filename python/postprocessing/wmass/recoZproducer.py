@@ -49,14 +49,14 @@ class recoZproducer(Module):
                     # reco Z, based on Muons objects
                     if "gen" not in key_mu:
                         if var_mu=="":
-                            (muP_pt, muN_pt) = (getattr(muons[idxP], "pt"+mu["tag"]), getattr(muons[idxN], "pt"+mu["tag"]))
+                            (muP_pt, muN_pt) = (getattr(muons[idxP], mu["tag"] + "pt"), getattr(muons[idxN], mu["tag"] + "pt"))
                         else:
                             if "Up" in var_mu:
-                                (muP_pt, muN_pt) = (max(getattr(muons[idxP], "pt"+mu["tag"]) + getattr(muons[idxP], "pt"+var_mu.rstrip("Up")), 0.0), 
-                                                    max(getattr(muons[idxN], "pt"+mu["tag"]) + getattr(muons[idxN], "pt"+var_mu.rstrip("Up")), 0.0))
+                                (muP_pt, muN_pt) = (max(getattr(muons[idxP], mu["tag"] + "pt") + getattr(muons[idxP], var_mu.rstrip("Up") + "pt"), 0.0), 
+                                                    max(getattr(muons[idxN], mu["tag"] + "pt") + getattr(muons[idxN], var_mu.rstrip("Up") + "pt"), 0.0))
                             elif "Down" in var_mu:
-                                (muP_pt, muN_pt) = (max(getattr(muons[idxP], "pt"+mu["tag"]) - getattr(muons[idxP], "pt"+var_mu.rstrip("Down")), 0.0), 
-                                                    max(getattr(muons[idxN], "pt"+mu["tag"]) - getattr(muons[idxN], "pt"+var_mu.rstrip("Down")), 0.0))
+                                (muP_pt, muN_pt) = (max(getattr(muons[idxP], mu["tag"] + "pt") - getattr(muons[idxP], var_mu.rstrip("Down")+ "pt"), 0.0), 
+                                                    max(getattr(muons[idxN], mu["tag"] + "pt") - getattr(muons[idxN], var_mu.rstrip("Down") + "pt"), 0.0))
                         muP.SetPtEtaPhiM(muP_pt, muons[idxP].eta, muons[idxP].phi, muons[idxP].mass)
                         muN.SetPtEtaPhiM(muN_pt, muons[idxN].eta, muons[idxN].phi, muons[idxN].mass)
                     # gen Z, based on gen muons
