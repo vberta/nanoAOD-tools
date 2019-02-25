@@ -41,7 +41,7 @@ class additionalVariables(Module):
                             continue
                         title_label = "MET: "+met["tag"]+" (syst: "+var_met+"), Muon: "+mu["tag"]+" (syst: "+var_mu+")"
                         branch_label_mu = ("GenMuon" if "gen" in key_mu else "Muon")
-                        branch_label_mu += "%s%s_%s%s" % (mu["tag"], var_mu, met["tag"], var_met)
+                        branch_label_mu += "%s%s_%s%s" % (mu["tag"], var_mu, met["tag"], var_met) if mu["tag"] == "" else "_%s%s_%s%s" % (mu["tag"], var_mu, met["tag"], var_met)
                         self.out.branch("%s_mt" % branch_label_mu, "F", lenVar="nMuons", title="Mt, "+title_label)
                         self.out.branch("%s_h_pt"  % branch_label_mu, "F", lenVar="nMuons", title="H pt, "+title_label)
                         self.out.branch("%s_h_phi" % branch_label_mu, "F", lenVar="nMuons", title="H phi, "+title_label)
@@ -91,7 +91,7 @@ class additionalVariables(Module):
                         if ("gen" in key_met and "gen" not in key_mu) or ("gen" in key_mu and "gen" not in key_met):
                             continue
                         branch_label_mu = ("GenMuon" if "gen" in key_mu else "Muon")
-                        branch_label_mu += "%s%s_%s%s" % (mu["tag"], var_mu, met["tag"], var_met)
+                        branch_label_mu += "%s%s_%s%s" % (mu["tag"], var_mu, met["tag"], var_met) if mu["tag"] == "" else "_%s%s_%s%s" % (mu["tag"], var_mu, met["tag"], var_met)
                         met_pt  = getattr(event,"%s_pt%s"  % (met["tag"], var_met))
                         met_phi = getattr(event,"%s_phi%s" % (met["tag"], var_met))
                         for imuon,muon in enumerate(muons) :
@@ -151,7 +151,6 @@ class additionalVariables(Module):
                             Recoil_phi_vec[imuon] = hphi
                             met_par_vec[imuon] = met_par
                             met_per_vec[imuon] = met_per
-
                         self.out.fillBranch("%s_mt" % branch_label_mu, Mt_vec)
                         self.out.fillBranch("%s_h_pt"  % branch_label_mu, Recoil_pt_vec)
                         self.out.fillBranch("%s_h_phi" % branch_label_mu, Recoil_phi_vec)
