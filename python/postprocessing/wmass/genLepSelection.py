@@ -51,8 +51,9 @@ class genLeptonSelection(Module):
                 if (g.statusFlags & (1 << 8)): preFSR_muons.append((i,g))
             if abs(g.pdgId) in [12, 14, 16]: neutrini.append((i,g)) # neutrino is prompt and don't explicitly ask for neutrino flavour
         
+        # compute all of them
         results = {}
-        for t in self.Wtypes:
+        for t in ['bare', 'preFSR', 'dress']:
             results[t+'_mu1'] = -1
             results[t+'_mu2'] = -1
         results['nu'] = -1
