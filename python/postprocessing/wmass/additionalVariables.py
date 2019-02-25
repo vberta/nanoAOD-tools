@@ -54,7 +54,7 @@ class additionalVariables(Module):
                         self.out.branch("%s_Wlike_h_phi" % branch_label_mu, "F",  lenVar="nMuons", title="W-like H phi, "+title_label)
                         self.out.branch("%s_Wlike_uPar" % branch_label_mu, "F",  lenVar="nMuons", title="W-like MET || mu, "+title_label)
                         self.out.branch("%s_Wlike_uPer" % branch_label_mu, "F",  lenVar="nMuons", title="W-like MET T mu, "+title_label)
-                        branch_label_Z  = ("GenZ" if "gen" in key_mu else "RecoZ")
+                        branch_label_Z  = ("GenFromRecoZ" if "gen" in key_mu else "RecoZ")
                         branch_label_Z  += "%s%s_%s%s" % (mu["tag"], var_mu, met["tag"], var_met)
                         self.out.branch("%s_uPar" % branch_label_Z, "F")
                         self.out.branch("%s_uPer" % branch_label_Z, "F")
@@ -101,9 +101,9 @@ class additionalVariables(Module):
                                     mu_pt = getattr(muon, mu["tag"]+"pt")
                                 else:
                                     if "Up" in var_mu:
-                                        mu_pt = max(getattr(muon, mu["tag"] + "pt") + getattr(muon, var_mu.rstrip("Up") + "pt"), 0.0)
+                                        mu_pt = max(getattr(muon, mu["tag"] + "pt") + getattr(muon, var_mu.rstrip("Up_") + "_pt"), 0.0)
                                     elif "Down" in var_mu:
-                                        mu_pt = max(getattr(muon, mu["tag"] + "pt") - getattr(muon, var_mu.rstrip("Down") + "pt"), 0.0)
+                                        mu_pt = max(getattr(muon, mu["tag"] + "pt") - getattr(muon, var_mu.rstrip("Down_") + "_pt"), 0.0)
                                 muon_phi,muon_mass = muon.phi,muon.mass
                             # Gen muons
                             else:
@@ -125,9 +125,9 @@ class additionalVariables(Module):
                                         nuLike_mu_pt = getattr(nuLike_muon, mu["tag"] + "pt")
                                     else:
                                         if "Up" in var_mu:
-                                            nuLike_mu_pt = max(getattr(nuLike_muon, mu["tag"] + "pt") + getattr(nuLike_muon, var_mu.rstrip("Up") + "pt"), 0.0)
+                                            nuLike_mu_pt = max(getattr(nuLike_muon, mu["tag"] + "pt") + getattr(nuLike_muon, var_mu.rstrip("Up_") + "_pt"), 0.0)
                                         elif "Down" in var_mu:
-                                            nuLike_mu_pt = max(getattr(nuLike_muon, mu["tag"]+"pt") - getattr(nuLike_muon, var_mu.rstrip("Down") + "pt"), 0.0)
+                                            nuLike_mu_pt = max(getattr(nuLike_muon, mu["tag"]+"pt") - getattr(nuLike_muon, var_mu.rstrip("Down_") + "_pt"), 0.0)
                                     nuLike_muon_phi,nuLike_muon_mass = nuLike_muon.phi,nuLike_muon.mass
                                 else:
                                     nuLike_genIdx = nuLike_muon.genPartIdx
@@ -158,12 +158,12 @@ class additionalVariables(Module):
                         if mu["tag"]=="" and var_mu=="":
                             self.out.fillBranch("%s_uPar" % branch_label_mu, met_par_vec)
                             self.out.fillBranch("%s_uPer" % branch_label_mu, met_per_vec)
-                        branch_label_Z  = ("GenZ" if "gen" in key_mu else "RecoZ")
+                        branch_label_Z  = ("GenFromRecoZ" if "gen" in key_mu else "RecoZ")
                         branch_label_Z  += "%s%s_%s%s" % (mu["tag"], var_mu, met["tag"], var_met)
                         if event.Vtype in [2,3]:
-                            Zpt = getattr(event, "%s%s%s_pt"  %  ("GenZ" if "gen" in key_mu else "RecoZ", mu["tag"], var_mu))
-                            Zphi = getattr(event, "%s%s%s_phi"  %  ("GenZ" if "gen" in key_mu else "RecoZ", mu["tag"], var_mu))
-                            Zmass = getattr(event, "%s%s%s_mass"  %  ("GenZ" if "gen" in key_mu else "RecoZ", mu["tag"], var_mu))
+                            Zpt = getattr(event, "%s%s%s_pt"  %  ("GenFromRecoZ" if "gen" in key_mu else "RecoZ", mu["tag"], var_mu))
+                            Zphi = getattr(event, "%s%s%s_phi"  %  ("GenFromRecoZ" if "gen" in key_mu else "RecoZ", mu["tag"], var_mu))
+                            Zmass = getattr(event, "%s%s%s_mass"  %  ("GenFromRecoZ" if "gen" in key_mu else "RecoZ", mu["tag"], var_mu))
                             (Zmt, Zh_pt, Zh_phi, Zmet_par, Zmet_per) = evaluateMt( Zpt, Zphi, Zmass, met_pt, met_phi)
                         else:
                             (Zmt, Zh_pt, Zh_phi, Zmet_par, Zmet_per) = (0., 0., 0., 0., 0.)

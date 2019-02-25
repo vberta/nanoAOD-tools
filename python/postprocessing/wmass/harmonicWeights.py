@@ -138,19 +138,16 @@ class harmonicWeights(Module):
             return True        
 
         for t in self.Wtypes:
-
-            q = getattr(event, "W_"+t+"_charge")
-
+            q = getattr(event, "GenV_"+t+"_charge")
             # W of type t not found
             if abs(q)!=13:
                 for c in (self.coeff+['UL']):
                     wc = 1.0
                     self.out.fillBranch("Weight_"+t+"_"+c, wc)
                 continue
-
             Wcharge = 'Wplus' if q==-13 else 'Wminus'             
-            ps_W  = (getattr(event, "W_"+t+"_y"), getattr(event, "W_"+t+"_qt") )
-            ps_CS = (getattr(event, "CS_"+t+"_theta"), getattr(event, "CS_"+t+"_phi") )
+            ps_W  = (getattr(event, "GenV_"+t+"_y"), getattr(event, "GenV_"+t+"_qt") )
+            ps_CS = (getattr(event, "GenV_"+t+"_CStheta"), getattr(event, "GenV_"+t+"_CSphi") )
 
             # if (qt,y) not in the bins, use MC
             useMC = False

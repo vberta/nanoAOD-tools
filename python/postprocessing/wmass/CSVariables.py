@@ -47,13 +47,13 @@ def getCSangles(muon,neutrino):
     flip_z = -1 if Wp4.Rapidity()<0.0 else +1
 
     # compute PS point
-    ps = (Lp4_rot.CosTheta()*flip_z, azimuth(Lp4_rot.Phi()*flip_z) )
-    return ps
+    return [Lp4_rot.CosTheta()*flip_z, azimuth(Lp4_rot.Phi()*flip_z)]
 
 
 class CSVariables(Module):
     def __init__(self,  Wtypes=['bare', 'preFSR', 'dress']):
         self.Wtypes = Wtypes
+        self.vars = ['CStheta','CSphi']
         pass
     def beginJob(self):
         pass
@@ -62,46 +62,36 @@ class CSVariables(Module):
     def beginFile(self, inputFile, outputFile, inputTree, wrappedOutputTree):
         self.out = wrappedOutputTree
         for t in self.Wtypes:
-            for v in ['theta', 'phi']:
-                self.out.branch("CS_"+t+"_"+v, "F")
+            for v in self.vars:
+                self.out.branch("GenV_%s_%s" % (t,v), "F")
 
     def endFile(self, inputFile, outputFile, inputTree, wrappedOutputTree):
         pass
 
     def analyze(self, event):
         """process event, return True (go to next module) or False (fail, go to next event)"""
-        if event.genVtype != 14 :
-            CStheta_bare, CSphi_bare     = 0.0, 0.0
-            CStheta_preFSR, CSphi_preFSR = 0.0, 0.0
-            CStheta_dress, CSphi_dress   = 0.0, 0.0
-        else:
+
+        results = {}
+        for t in self.Wtypes:
+            for v in self.vars:
+                results[t+'_'+v] = 0.0
+            
+        if event.genVtype in [13,14]:
             genParticles = Collection(event, "GenPart")
             genDressedLeptons = Collection(event,"GenDressedLepton")
-            bareMuonIdx = event.Idx_mu_bare
-            NeutrinoIdx = event.Idx_nu
-            preFSRMuonIdx = event.Idx_mu_preFSR
-            dressMuonIdx = event.Idx_mu_dress
-            if(bareMuonIdx>=0) :
-                CStheta_bare, CSphi_bare  = getCSangles(genParticles[bareMuonIdx], genParticles[NeutrinoIdx])
-            else :
-                CStheta_bare, CSphi_bare = 0.0, 0.0
-            if(preFSRMuonIdx>=0) :
-                CStheta_preFSR, CSphi_preFSR = getCSangles(genParticles[preFSRMuonIdx], genParticles[NeutrinoIdx])
-            else :
-                CStheta_preFSR, CSphi_preFSR = 0.0, 0.0
-            if(dressMuonIdx>=0) :
-                CStheta_dress, CSphi_dress = getCSangles(genDressedLeptons[dressMuonIdx], genParticles[NeutrinoIdx])
-            else :
-                CStheta_dress, CSphi_dress = 0.0, 0.0
+            idx_nu = event.Idx_nu
+            for t in self.Wtypes:
+                genCollection = genParticles if t in ["bare", "preFSR"] else genDressedLeptons
+                idx_mu1 = getattr(event, "Idx_"+t+"_mu1")
+                idx_mu2 = getattr(event, "Idx_"+t+"_mu2")
+                if idx_mu1>=0:
+                    ps = getCSangles(genCollection[idx_mu1], (genParticles[idx_nu] if idx_nu>=0 else genCollection[idx_mu2]) )
+                    for iv,v in enumerate(self.vars):
+                        results["%s_%s" % (t,v)] = ps[iv]
 
-        self.out.fillBranch("CS_bare_theta",CStheta_bare)
-        self.out.fillBranch("CS_bare_phi",CSphi_bare)
-
-        self.out.fillBranch("CS_preFSR_theta",CStheta_preFSR)
-        self.out.fillBranch("CS_preFSR_phi",CSphi_preFSR)
-
-        self.out.fillBranch("CS_dress_theta",CStheta_dress)
-        self.out.fillBranch("CS_dress_phi",CSphi_dress)
+        for t in self.Wtypes:
+            for v in self.vars:
+                self.out.fillBranch("GenV_%s_%s" % (t,v), results["%s_%s" % (t,v)])
 
         return True
 

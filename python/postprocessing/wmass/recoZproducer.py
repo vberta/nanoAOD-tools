@@ -19,7 +19,7 @@ class recoZproducer(Module):
         self.out = wrappedOutputTree
         for key_mu,mu in self.mudict.items() :
             for ivar_mu,var_mu in enumerate(mu["systs"]):
-                branch_label = ("GenZ" if "gen" in key_mu else "RecoZ")
+                branch_label = ("GenFromRecoZ" if "gen" in key_mu else "RecoZ")
                 branch_label += ("%s%s" % (mu["tag"], var_mu))
                 self.out.branch("%s_pt" % branch_label, "F")
                 self.out.branch("%s_phi" % branch_label, "F")
@@ -52,11 +52,11 @@ class recoZproducer(Module):
                             (muP_pt, muN_pt) = (getattr(muons[idxP], mu["tag"] + "pt"), getattr(muons[idxN], mu["tag"] + "pt"))
                         else:
                             if "Up" in var_mu:
-                                (muP_pt, muN_pt) = (max(getattr(muons[idxP], mu["tag"] + "pt") + getattr(muons[idxP], var_mu.rstrip("Up") + "pt"), 0.0), 
-                                                    max(getattr(muons[idxN], mu["tag"] + "pt") + getattr(muons[idxN], var_mu.rstrip("Up") + "pt"), 0.0))
+                                (muP_pt, muN_pt) = (max(getattr(muons[idxP], mu["tag"] + "pt") + getattr(muons[idxP], var_mu.rstrip("Up_") + "_pt"), 0.0), 
+                                                    max(getattr(muons[idxN], mu["tag"] + "pt") + getattr(muons[idxN], var_mu.rstrip("Up_") + "_pt"), 0.0))
                             elif "Down" in var_mu:
-                                (muP_pt, muN_pt) = (max(getattr(muons[idxP], mu["tag"] + "pt") - getattr(muons[idxP], var_mu.rstrip("Down")+ "pt"), 0.0), 
-                                                    max(getattr(muons[idxN], mu["tag"] + "pt") - getattr(muons[idxN], var_mu.rstrip("Down") + "pt"), 0.0))
+                                (muP_pt, muN_pt) = (max(getattr(muons[idxP], mu["tag"] + "pt") - getattr(muons[idxP], var_mu.rstrip("Down_")+ "_pt"), 0.0), 
+                                                    max(getattr(muons[idxN], mu["tag"] + "pt") - getattr(muons[idxN], var_mu.rstrip("Down_") + "_pt"), 0.0))
                         muP.SetPtEtaPhiM(muP_pt, muons[idxP].eta, muons[idxP].phi, muons[idxP].mass)
                         muN.SetPtEtaPhiM(muN_pt, muons[idxN].eta, muons[idxN].phi, muons[idxN].mass)
                     # gen Z, based on gen muons
@@ -69,7 +69,7 @@ class recoZproducer(Module):
                     Z = muP+muN
                     (Z_pt, Z_phi, Z_y, Z_mass) = (Z.Pt(), Z.Phi(), Z.Rapidity(), Z.M())
                     CStheta, CSphi = getCSangles(muP,muN)
-                    branch_label = ("GenZ" if "gen" in key_mu else "RecoZ")
+                    branch_label = ("GenFromRecoZ" if "gen" in key_mu else "RecoZ")
                     branch_label += ("%s%s" % (mu["tag"], var_mu))
                     self.out.fillBranch("%s_pt"  % branch_label, Z_pt)
                     self.out.fillBranch("%s_phi"  % branch_label, Z_phi)
