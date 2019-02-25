@@ -16,9 +16,9 @@ from PhysicsTools.NanoAODTools.postprocessing.modules.common.lepSFProducer impor
 
 from PhysicsTools.NanoAODTools.postprocessing.wmass.preSelection import *
 from PhysicsTools.NanoAODTools.postprocessing.wmass.additionalVariables import *
-from PhysicsTools.NanoAODTools.postprocessing.wmass.lepSelection import *
+from PhysicsTools.NanoAODTools.postprocessing.wmass.genLepSelection import *
 from PhysicsTools.NanoAODTools.postprocessing.wmass.CSVariables import *
-from PhysicsTools.NanoAODTools.postprocessing.wmass.genWproducer import *
+from PhysicsTools.NanoAODTools.postprocessing.wmass.genVproducer import *
 from PhysicsTools.NanoAODTools.postprocessing.wmass.recoZproducer import *
 from PhysicsTools.NanoAODTools.postprocessing.wmass.harmonicWeights import *
 
@@ -170,9 +170,9 @@ if isMC:
                muonScaleRes(),
                recoZproducer(mudict=mudict, isMC=isMC),
                additionalVariables(isMC=isMC, mudict=mudict, metdict=metdict), 
-               leptonSelectModule(), 
+               genLeptonSelectModule(), 
                CSAngleModule(), 
-               genWproducerModule(),
+               genVproducerModule(),
                harmonicWeightsModule(),
                ]
 else:
