@@ -37,9 +37,9 @@ class muonScaleResProducer(Module):
 
     def beginFile(self, inputFile, outputFile, inputTree, wrappedOutputTree):
         self.out = wrappedOutputTree
-        self.out.branch("Muon_pt_corrected", "F", lenVar="nMuon")
+        self.out.branch("Muon_corrected_pt", "F", lenVar="nMuon")
         if self.is_2017:
-            self.out.branch("Muon_pt_sys_uncert", "F", lenVar="nMuon")
+            self.out.branch("Muon_sys_uncert_pt", "F", lenVar="nMuon")
         self.is_mc = bool(inputTree.GetBranch("GenJet_pt"))
 
     def endFile(self, inputFile, outputFile, inputTree, wrappedOutputTree):
@@ -76,9 +76,9 @@ class muonScaleResProducer(Module):
                         mu.charge, mu.pt, mu.eta, mu.phi
                     ) for mu in muons)
 
-        self.out.fillBranch("Muon_pt_corrected", pt_corr)
+        self.out.fillBranch("Muon_corrected_pt", pt_corr)
         if self.is_2017:
-            self.out.fillBranch("Muon_pt_sys_uncert",  pt_err)
+            self.out.fillBranch("Muon_sys_uncert_pt",  pt_err)
 
         return True
 
