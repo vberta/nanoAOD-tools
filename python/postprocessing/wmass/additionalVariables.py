@@ -116,10 +116,10 @@ class additionalVariables(Module):
                             (mt,hpt,hphi,met_par,met_per) = evaluateMt( mu_pt, muon_phi, muon_mass, met_pt, met_phi)
                             
                             # W-like (filled only when there are 2 muons)
-                            if event.Vtype in [2,3] and imuon in [event.Muon_idx1, event.Muon_idx2]:                                
+                            if event.Vtype in [2,3] and imuon in [event.Idx_mu1, event.Idx_mu2]:                                
                                 metWlike_px, metWlike_py = met_pt*math.sin(met_phi), met_pt*math.cos(met_phi) 
                                 # nu-like muon is the OTHER muon wrt the one being analyzed
-                                nuLike_muon = muons[event.Muon_idx2] if imuon==event.Muon_idx1 else muons[event.Muon_idx1]
+                                nuLike_muon = muons[event.Idx_mu2] if imuon==event.Idx_mu1 else muons[event.Idx_mu1]
                                 if "gen" not in key_mu:
                                     if var_mu=="":
                                         nuLike_mu_pt = getattr(nuLike_muon, "pt"+mu["tag"])

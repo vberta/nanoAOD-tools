@@ -8,50 +8,6 @@ from PhysicsTools.NanoAODTools.postprocessing.framework.datamodel import Collect
 from PhysicsTools.NanoAODTools.postprocessing.framework.eventloop import Module
 
 #global definition of CS angles
-'''
-def getCSangles(muon, neutrino):
-    m = ROOT.TLorentzVector()
-    n = ROOT.TLorentzVector()
-    w = ROOT.TLorentzVector()    
-    if hasattr(muon, "pt"):
-        m.SetPtEtaPhiM(muon.pt, muon.eta, muon.phi, muon.mass)
-        n.SetPtEtaPhiM(neutrino.pt, neutrino.eta, neutrino.phi, 0.)
-    else:
-        m.SetPtEtaPhiM(muon.Pt(), muon.Eta(), muon.Phi(), muon.M())
-        n.SetPtEtaPhiM(neutrino.Pt(), neutrino.Eta(), neutrino.Phi(), 0.)
-    w = m + n
-    if(w.Z()==0.):
-	sign=1
-    else :
-	sign  = abs(w.Z())/w.Z()
-
-    ProtonMass = 0.938
-    BeamEnergy = 6500.000
-
-    p1 = ROOT.TLorentzVector()
-    p2 = ROOT.TLorentzVector()
-
-    p1.SetPxPyPzE(0, 0, sign*BeamEnergy, math.sqrt(BeamEnergy*BeamEnergy+ProtonMass*ProtonMass))
-    p2.SetPxPyPzE(0, 0, -1*sign*BeamEnergy, math.sqrt(BeamEnergy*BeamEnergy+ProtonMass*ProtonMass))
-
-    p1.Boost(-w.BoostVector())
-    p2.Boost(-w.BoostVector())
-
-    CSAxis = (p1.Vect().Unit()-p2.Vect().Unit()).Unit() #quantise along axis that bisects the boosted beams
-
-    yAxis = (p1.Vect().Unit()).Cross((p2.Vect().Unit())) #other axes
-    yAxis = yAxis.Unit()
-    xAxis = yAxis.Cross(CSAxis)
-    xAxis = xAxis.Unit()
-
-    m.Boost(-w.BoostVector())
-
-    phi = math.atan2((m.Vect()*yAxis),(m.Vect()*xAxis))
-    if phi<0: phi = phi + 2*math.pi
-
-    return math.cos(m.Angle(CSAxis)), phi
-'''
-
 def azimuth(phi):
     if phi<0.0:
         phi += 2*math.pi
@@ -121,10 +77,10 @@ class CSVariables(Module):
         else:
             genParticles = Collection(event, "GenPart")
             genDressedLeptons = Collection(event,"GenDressedLepton")
-            bareMuonIdx = event.GenPart_bareMuonIdx
-            NeutrinoIdx = event.GenPart_NeutrinoIdx
-            preFSRMuonIdx = event.GenPart_preFSRMuonIdx
-            dressMuonIdx = event.GenDressedLepton_dressMuonIdx
+            bareMuonIdx = event.Idx_mu_bare
+            NeutrinoIdx = event.Idx_nu
+            preFSRMuonIdx = event.Idx_mu_preFSR
+            dressMuonIdx = event.Idx_mu_dress
             if(bareMuonIdx>=0) :
                 CStheta_bare, CSphi_bare  = getCSangles(genParticles[bareMuonIdx], genParticles[NeutrinoIdx])
             else :
