@@ -20,6 +20,7 @@ from PhysicsTools.NanoAODTools.postprocessing.wmass.lepSelection import *
 from PhysicsTools.NanoAODTools.postprocessing.wmass.CSVariables import *
 from PhysicsTools.NanoAODTools.postprocessing.wmass.genWproducer import *
 from PhysicsTools.NanoAODTools.postprocessing.wmass.recoZproducer import *
+from PhysicsTools.NanoAODTools.postprocessing.wmass.harmonicWeights import *
 
 class bcolors:
     HEADER = '\033[95m'
@@ -172,6 +173,7 @@ if isMC:
                leptonSelectModule(), 
                CSAngleModule(), 
                genWproducerModule(),
+               harmonicWeightsModule(),
                ]
 else:
     input_files.append( input_dir+ifileDATA )

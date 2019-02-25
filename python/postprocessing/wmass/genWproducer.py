@@ -15,7 +15,8 @@ def getWvariables(muon, neutrino):
     return w.Pt(), w.Rapidity(), w.Phi(), w.M()
 
 class genWproducer(Module):
-    def __init__(self):
+    def __init__(self,  Wtypes=['bare', 'preFSR', 'dress']):
+        self.Wtypes = Wtypes
         pass
     def beginJob(self):
         pass
@@ -23,18 +24,9 @@ class genWproducer(Module):
         pass
     def beginFile(self, inputFile, outputFile, inputTree, wrappedOutputTree):
         self.out = wrappedOutputTree
-        self.out.branch("Wpt_bare", "F")
-        self.out.branch("Wrap_bare", "F")
-        self.out.branch("Wphi_bare", "F")
-        self.out.branch("Wmass_bare", "F")
-        self.out.branch("Wpt_preFSR", "F")
-        self.out.branch("Wrap_preFSR", "F")
-        self.out.branch("Wphi_preFSR", "F")
-        self.out.branch("Wmass_preFSR", "F")
-        self.out.branch("Wpt_dress", "F")
-        self.out.branch("Wrap_dress", "F")
-        self.out.branch("Wphi_dress", "F")
-        self.out.branch("Wmass_dress", "F")
+        for t in self.Wtypes:
+            for v in ['qt', 'y', 'phi', 'mass', 'charge']:                
+                self.out.branch("W_"+t+"_"+v, "F")
 
     def endFile(self, inputFile, outputFile, inputTree, wrappedOutputTree):
         pass
@@ -42,37 +34,40 @@ class genWproducer(Module):
     def analyze(self, event):
         """process event, return True (go to next module) or False (fail, go to next event)"""
 
-        (Wpt_bare, Wrap_bare, Wphi_bare, Wmass_bare) = (0., 0., 0., 0.)
-        (Wpt_preFSR, Wrap_preFSR, Wphi_preFSR, Wmass_preFSR) =  (0., 0., 0., 0.)
-        (Wpt_dress, Wrap_dress, Wphi_dress, Wmass_dress) =  (0., 0., 0., 0.)
+        (Wpt_bare, Wrap_bare, Wphi_bare, Wmass_bare, Wcharge_bare) = (0., 0., 0., 0., -1)
+        (Wpt_preFSR, Wrap_preFSR, Wphi_preFSR, Wmass_preFSR, Wcharge_preFSR) =  (0., 0., 0., 0., -1)
+        (Wpt_dress, Wrap_dress, Wphi_dress, Wmass_dress, Wcharge_dress) =  (0., 0., 0., 0., -1)
 
         # reobtain the indices of the good muons and the neutrino
         if event.genVtype==14:
             genParticles = Collection(event, "GenPart")
             genDressedLeptons = Collection(event,"GenDressedLepton")
-            bareMuonIdx = event.GenPart_bareMuonIdx
-            NeutrinoIdx = event.GenPart_NeutrinoIdx
-            preFSRMuonIdx = event.GenPart_preFSRMuonIdx
-            dressMuonIdx = event.GenDressedLepton_dressMuonIdx
+            bareMuonIdx = event.Idx_mu_bare
+            NeutrinoIdx = event.Idx_nu
+            preFSRMuonIdx = event.Idx_mu_preFSR
+            dressMuonIdx = event.Idx_mu_dress
             if(bareMuonIdx>=0) :
-                (Wpt_bare, Wrap_bare, Wphi_bare, Wmass_bare) = getWvariables(genParticles[bareMuonIdx], genParticles[NeutrinoIdx])
+                (Wpt_bare, Wrap_bare, Wphi_bare, Wmass_bare), Wcharge_bare = getWvariables(genParticles[bareMuonIdx], genParticles[NeutrinoIdx]), genParticles[bareMuonIdx].pdgId
             if(preFSRMuonIdx>=0) :
-                (Wpt_preFSR, Wrap_preFSR, Wphi_preFSR, Wmass_preFSR) = getWvariables(genParticles[preFSRMuonIdx], genParticles[NeutrinoIdx])
+                (Wpt_preFSR, Wrap_preFSR, Wphi_preFSR, Wmass_preFSR), Wcharge_preFSR = getWvariables(genParticles[preFSRMuonIdx], genParticles[NeutrinoIdx]), genParticles[preFSRMuonIdx].pdgId
             if(dressMuonIdx>=0) :
-                (Wpt_dress, Wrap_dress, Wphi_dress, Wmass_dress) = getWvariables(genDressedLeptons[dressMuonIdx], genParticles[NeutrinoIdx])
+                (Wpt_dress, Wrap_dress, Wphi_dress, Wmass_dress), Wcharge_dress = getWvariables(genDressedLeptons[dressMuonIdx], genParticles[NeutrinoIdx]), genDressedLeptons[dressMuonIdx].pdgId
         
-        self.out.fillBranch("Wpt_bare",Wpt_bare)
-        self.out.fillBranch("Wrap_bare",Wrap_bare)
-        self.out.fillBranch("Wphi_bare",Wphi_bare)
-        self.out.fillBranch("Wmass_bare",Wmass_bare)
-        self.out.fillBranch("Wpt_preFSR",Wpt_preFSR)
-        self.out.fillBranch("Wrap_preFSR",Wrap_preFSR)
-        self.out.fillBranch("Wphi_preFSR",Wphi_preFSR)
-        self.out.fillBranch("Wmass_preFSR",Wmass_preFSR)
-        self.out.fillBranch("Wpt_dress",Wpt_dress)
-        self.out.fillBranch("Wrap_dress",Wrap_dress)
-        self.out.fillBranch("Wphi_dress",Wphi_dress)
-        self.out.fillBranch("Wmass_dress",Wmass_dress)
+        self.out.fillBranch("W_bare_qt",Wpt_bare)
+        self.out.fillBranch("W_bare_y",Wrap_bare)
+        self.out.fillBranch("W_bare_phi",Wphi_bare)
+        self.out.fillBranch("W_bare_mass",Wmass_bare)
+        self.out.fillBranch("W_bare_charge",Wcharge_bare)
+        self.out.fillBranch("W_preFSR_qt",Wpt_preFSR)
+        self.out.fillBranch("W_preFSR_y",Wrap_preFSR)
+        self.out.fillBranch("W_preFSR_phi",Wphi_preFSR)
+        self.out.fillBranch("W_preFSR_mass",Wmass_preFSR)
+        self.out.fillBranch("W_preFSR_charge",Wcharge_preFSR)
+        self.out.fillBranch("W_dress_qt",Wpt_dress)
+        self.out.fillBranch("W_dress_y",Wrap_dress)
+        self.out.fillBranch("W_dress_phi",Wphi_dress)
+        self.out.fillBranch("W_dress_mass",Wmass_dress)
+        self.out.fillBranch("W_dress_charge",Wcharge_dress)
 
         return True
 
