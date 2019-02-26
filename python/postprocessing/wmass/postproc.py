@@ -22,6 +22,10 @@ from PhysicsTools.NanoAODTools.postprocessing.wmass.genVproducer import *
 from PhysicsTools.NanoAODTools.postprocessing.wmass.recoZproducer import *
 from PhysicsTools.NanoAODTools.postprocessing.wmass.harmonicWeights import *
 
+def not_applicable():
+    print "Not applicable"
+    return
+
 class bcolors:
     HEADER = '\033[95m'
     OKBLUE = '\033[94m'
@@ -64,7 +68,9 @@ if crab:
 
 ################################################ JEC
 # JEC for MET
-jecTagsMC = {'2016' : 'Summer16_07Aug2017_V11_MC', '2017' : 'Fall17_17Nov2017_V32_MC'}
+jecTagsMC = {'2016' : 'Summer16_07Aug2017_V11_MC', 
+             '2017' : 'Fall17_17Nov2017_V32_MC', 
+             '2018' : 'Autumn18_V3_MC'}
 
 jecTagsDATA = { '2016B' : 'Summer16_07Aug2017BCD_V11_DATA', 
                 '2016C' : 'Summer16_07Aug2017BCD_V11_DATA', 
@@ -79,12 +85,15 @@ jecTagsDATA = { '2016B' : 'Summer16_07Aug2017BCD_V11_DATA',
                 '2017D' : 'Fall17_17Nov2017DE_V32_DATA', 
                 '2017E' : 'Fall17_17Nov2017DE_V32_DATA', 
                 '2017F' : 'Fall17_17Nov2017F_V32_DATA', 
+                '2018A' : '',
+                '2018B' : '',
+                '2018C' : '',
+                '2018D' : '',
                 }   
 
 jecTag = jecTagsMC[str(dataYear)] if isMC else jecTagsDATA[str(dataYear) + runPeriod]
 
 jmeUncert = [x for x in jesUncert.split(",")]
-
 
 print "JECTag =", bcolors.OKGREEN, jecTag,  bcolors.ENDC, \
     "jesUncertainties =", bcolors.OKGREEN, jmeUncert,  bcolors.ENDC, \
@@ -94,14 +103,21 @@ print "JECTag =", bcolors.OKGREEN, jecTag,  bcolors.ENDC, \
 if crab :
     jesDatadir = os.environ['CMSSW_BASE'] + "/src/PhysicsTools/NanoAODTools/data/jme/"
     jesInputFile = jesDatadir + jecTag + ".tar.gz"
-    print "Using JEC files from:", jesInputFile
-    subprocess.call(['tar', "-xzvf", jesInputFile, "-C", jesDatadir])
+    if os.path.isfile(jesInputFile):
+        print "Using JEC files from: %s" % jesInputFile
+        subprocess.call(['tar', "-xzvf", jesInputFile, "-C", jesDatadir])
+    else:
+        print "JEC file %s does not exist" % jesInputFile
 
 #jme corrections
 if isMC:
-    jmeCorrections=lambda : jetmetUncertaintiesProducer(era=str(dataYear), globalTag=jecTag, jesUncertainties=jmeUncert, redoJEC=redojec, saveJets=False)
+    jmeCorrections = lambda : jetmetUncertaintiesProducer(era=str(dataYear), globalTag=jecTag, jesUncertainties=jmeUncert, redoJEC=redojec, saveJets=False)
 else:
-    jmeCorrections=lambda : jetRecalib(globalTag=jecTag)
+    if redojec:
+        jmeCorrections = lambda : jetRecalib(globalTag=jecTag)
+    else:
+        jmeCorrections = None
+        print bcolors.OKBLUE, "No module %s will be run" % "jetRecalib", bcolors.ENDC
 
 ################################################ MET
 # MET dictionary 
@@ -109,36 +125,40 @@ doJERVar = True
 doJESVar = True
 doUnclustVar = True
 metdict = {
-    "pf"    : { "tag" : "MET",      "systs"  : [""] },
-    "tk"    : { "tag" : "TkMET",    "systs"  : [""] },
+    "PF"    : { "tag" : "MET",      "systs"  : [""] },
+    #"TK"    : { "tag" : "TkMET",    "systs"  : [""] },
     #"puppi" : { "tag" : "PuppiMET", "systs"  : [""] },
     }
 if isMC:
     metdict["gen"] = {"tag" : "GenMET", "systs"  : [""]}
     if doJERVar:
-        metdict["pf"]["systs"].extend( ["_nom", "_jerUp", "_jerDown"] )
+        metdict["PF"]["systs"].extend( ["_nom", "_jerUp", "_jerDown"] )
     if doJESVar:
-        metdict["pf"]["systs"].extend( ["_jesTotalUp", "_jesTotalDown"] )
+        metdict["PF"]["systs"].extend( ["_jesTotalUp", "_jesTotalDown"] )
     if doUnclustVar:
-        metdict["pf"]["systs"].extend( ["_unclustEnUp", "_unclustEnDown"] )
+        metdict["PF"]["systs"].extend( ["_unclustEnUp", "_unclustEnDown"] )
 
 ################################################ PU
 #pu reweight modules
 puWeightProducer = puWeight_2016
 if dataYear==2017:
     puWeightProducer = puWeight_2017
+elif dataYear==2018:
+    puWeightProducer = puWeight_2017 # FIXME
 
 ################################################ Muons
 #Rochester correction for muons
 muonScaleRes = muonScaleRes2016
 if dataYear==2017:
     muonScaleRes = muonScaleRes2017
-
+elif dataYear==2018:
+    muonScaleRes = None
+    print bcolors.OKBLUE, "No module %s will be run" % "muonScaleRes", bcolors.ENDC
+    
 # muon dictionary
-mudict = {
-    "pf"     : { "tag" : "",             "systs"  : [""] },
-    "roccor" : { "tag" : "corrected_",   "systs"  : [""] },
-    }
+mudict = { "PF" : { "tag" : "", "systs" : [""] } }
+if dataYear in [2016,2017]:
+    mudict["roccor"] = { "tag" : "corrected_",   "systs"  : [""] }
 if isMC:
     mudict["gen_bare"] = { "tag" : "_bare",  "systs" : [""] }
     # these exist only for 2017
@@ -150,13 +170,23 @@ if isMC:
 ##This is temporary for testing purpose
 input_dir = "/gpfs/ddn/srm/cms/store/"
 #input_dir = "/gpfs/ddn/srm/cms/store/user/emanca/"
-ifileMC = "mc/RunIISummer16NanoAODv3/DYJetsToLL_Pt-50To100_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/NANOAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v2/280000/26DE6A2F-9329-E911-8766-002590DE6E8A.root"
-#ifileMC = "NanoWMassV4/WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/NanoWMass/190218_175825/0000/myNanoProdMc_NANO_41.root"
-if dataYear==2017:
+
+ifileMC = ""
+if dataYear==2016:
+    ifileMC = "mc/RunIISummer16NanoAODv3/DYJetsToLL_Pt-50To100_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/NANOAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v2/280000/26DE6A2F-9329-E911-8766-002590DE6E8A.root"
+    #ifileMC = "NanoWMassV4/WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/NanoWMass/190218_175825/0000/myNanoProdMc_NANO_41.root"
+elif dataYear==2017:
     ifileMC = "mc/RunIIFall17NanoAODv4/DYJetsToLL_0J_TuneCP5_13TeV-amcatnloFXFX-pythia8/NANOAODSIM/PU2017_12Apr2018_Nano14Dec2018_102X_mc2017_realistic_v6-v1/20000/41874784-9F25-7C49-B4E3-6EECD93B77CA.root"    
-ifileDATA = "data/Run2016D/DoubleEG/NANOAOD/Nano14Dec2018-v1/280000/481DA5C0-DF96-5640-B5D1-208F52CAC829.root"
-if dataYear==2017:
+elif dataYear==2018:
+    ifileMC = "mc/RunIIAutumn18NanoAODv4/DY2JetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8/NANOAODSIM/Nano14Dec2018_102X_upgrade2018_realistic_v16-v1/270000/320474A7-2A79-E042-BD91-BD48021177A2.root"
+
+ifileDATA = ""
+if dataYear==2016:
+    ifileDATA = "data/Run2016D/DoubleEG/NANOAOD/Nano14Dec2018-v1/280000/481DA5C0-DF96-5640-B5D1-208F52CAC829.root"
+elif dataYear==2017:
     ifileDATA = "data/Run2017E/DoubleMuon/NANOAOD/31Mar2018-v1/710000/A452D873-4B6E-E811-BE23-FA163E60E3B4.root"
+elif dataYear==2018:
+    ifileDATA = "data/Run2018D/SingleMuon/NANOAOD/14Sep2018_ver2-v1/110000/41819B10-A73F-BC4A-9CCC-FD93D80D5465.root"
 
 input_files = []
 modules = []
@@ -167,7 +197,6 @@ if isMC:
                preSelection(isMC=isMC, passall=passall, dataYear=dataYear), 
                lepSF(),
                jmeCorrections(),
-               muonScaleRes(),
                recoZproducer(mudict=mudict, isMC=isMC),
                additionalVariables(isMC=isMC, mudict=mudict, metdict=metdict), 
                genLeptonSelectModule(), 
@@ -175,14 +204,16 @@ if isMC:
                genVproducerModule(),
                harmonicWeightsModule(),
                ]
+    if muonScaleRes!=None: modules.insert(3, muonScaleRes())
+        
 else:
     input_files.append( input_dir+ifileDATA )
     modules = [preSelection(isMC=isMC, passall=passall, dataYear=dataYear), 
-               jmeCorrections(),
-               muonScaleRes(),
                recoZproducer(mudict=mudict, isMC=isMC),
                additionalVariables(isMC=isMC, mudict=mudict, metdict=metdict),
                ]
+    if jmeCorrections!=None: modules.insert(1,jmeCorrections())
+    if muonScaleRes!=None: modules.insert(1, muonScaleRes())
 
 treecut = ("Entry$<" + str(maxEvents) if maxEvents > 0 else None)
 p = PostProcessor(outputDir=".",  

@@ -56,8 +56,10 @@ config.Data.unitsPerJob = 5
 if not isMC:
     if dataYear==2016:
         config.Data.lumiMask = 'Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt'
-    elif  dataYear==2017:
+    elif dataYear==2017:
         config.Data.lumiMask = 'Cert_294927-306462_13TeV_EOY2017ReReco_Collisions17_JSON.txt'
+    elif dataYear==2018:
+        config.Data.lumiMask = 'Cert_314472-325175_13TeV_PromptReco_Collisions18_JSON.txt'
     else:
         config.Data.lumiMask = 'TEST'
     print "Using lumiMask", config.Data.lumiMask
@@ -74,7 +76,7 @@ if __name__ == '__main__':
     print 'Creating file '+'postcrab-'+tag+'.txt for crab submission '+tag
     fout = open('postcrab_'+samples.rstrip('.txt')+'_'+tag+'.txt', 'w') 
 
-    if run in ['submit', 'dryrun']:
+    if run in ['submit', 'dryrun', 'debug']:
         print 'Cleaning the ../data/jme/ directory from unnecessary .txt files'
         backup_dir = '../../../../../JEC/'
         jec_dir = '../data/jme/'
@@ -82,6 +84,7 @@ if __name__ == '__main__':
             os.system('mkdir '+backup_dir)
         os.system('mv '+jec_dir+'Summer16*txt '+backup_dir)
         os.system('mv '+jec_dir+'Fall17*txt '+backup_dir)
+        os.system('mv '+jec_dir+'Autumn18*txt '+backup_dir)
         os.system('ls -tr '+jec_dir)
         os.system('du -h '+jec_dir)
 
@@ -134,8 +137,9 @@ if __name__ == '__main__':
         n += 1
     fout.close()
 
-    if run in ['submit', 'dryrun']:
+    if run in ['submit', 'dryrun', 'debug']:
         print 'Restore the '+jec_dir
         os.system('mv '+backup_dir+'Summer16*txt '+jec_dir)
         os.system('mv '+backup_dir+'Fall17*txt '+jec_dir)
+        os.system('mv '+backup_dir+'Autumn18*txt '+jec_dir)
     

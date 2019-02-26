@@ -63,6 +63,9 @@ class jetmetUncertaintiesProducer(Module):
             elif self.era == "2017":
                 self.jesUncertaintyInputFileName = globalTag + "_Uncertainty_" + jetType + ".txt"
                 #self.jesUncertaintyInputFileName = "Fall17_17Nov2017_V6_MC_Uncertainty_" + jetType + ".txt"
+            elif self.era == "2018":
+                self.jesUncertaintyInputFileName = globalTag + "_Uncertainty_" + jetType + ".txt"
+                #self.jesUncertaintyInputFileName = "Fall17_17Nov2017_V6_MC_Uncertainty_" + jetType + ".txt"
             else:
                 raise ValueError("ERROR: Invalid era = '%s'!" % self.era)
         else:
@@ -70,6 +73,9 @@ class jetmetUncertaintiesProducer(Module):
                 self.jesUncertaintyInputFileName =  globalTag + "_UncertaintySources_" + jetType + ".txt"
                 #self.jesUncertaintyInputFileName = "Summer16_23Sep2016V4_MC_UncertaintySources_" + jetType + ".txt"
             elif self.era == "2017":
+                self.jesUncertaintyInputFileName = globalTag + "_UncertaintySources_" + jetType + ".txt"
+                #self.jesUncertaintyInputFileName = "Fall17_17Nov2017_V6_MC_UncertaintySources_" + jetType + ".txt"
+            elif self.era == "2018":
                 self.jesUncertaintyInputFileName = globalTag + "_UncertaintySources_" + jetType + ".txt"
                 #self.jesUncertaintyInputFileName = "Fall17_17Nov2017_V6_MC_UncertaintySources_" + jetType + ".txt"
             else:
@@ -108,7 +114,7 @@ class jetmetUncertaintiesProducer(Module):
         # implementation didn't seem to work for factorized JEC, try again another way
         for jesUncertainty in self.jesUncertainties:
             jesUncertainty_label = jesUncertainty
-            if self.era in ["2016", "2017"] and jesUncertainty == 'Total' and len(self.jesUncertainties) == 1:
+            if self.era in ["2016", "2017", "2018"] and jesUncertainty == 'Total' and len(self.jesUncertainties) == 1:
                 jesUncertainty_label = ''
             pars = ROOT.JetCorrectorParameters(os.path.join(self.jesInputFilePath, self.jesUncertaintyInputFileName),jesUncertainty_label)
             self.jesUncertainty[jesUncertainty] = ROOT.JetCorrectionUncertainty(pars)    
