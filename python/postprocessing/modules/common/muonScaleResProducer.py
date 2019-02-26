@@ -39,7 +39,8 @@ class muonScaleResProducer(Module):
         self.out = wrappedOutputTree
         self.out.branch("Muon_corrected_pt", "F", lenVar="nMuon")
         if self.is_2017:
-            self.out.branch("Muon_sys_uncert_pt", "F", lenVar="nMuon")
+            self.out.branch("Muon_correctedUp_pt", "F", lenVar="nMuon")
+            self.out.branch("Muon_correctedDown_pt", "F", lenVar="nMuon")
         self.is_mc = bool(inputTree.GetBranch("GenJet_pt"))
 
     def endFile(self, inputFile, outputFile, inputTree, wrappedOutputTree):
@@ -78,7 +79,10 @@ class muonScaleResProducer(Module):
 
         self.out.fillBranch("Muon_corrected_pt", pt_corr)
         if self.is_2017:
-            self.out.fillBranch("Muon_sys_uncert_pt",  pt_err)
+            pt_corr_up = list( max(pt_corr[imu]+pt_err[imu], 0.0) for imu,mu in enumerate(muons) )
+            pt_corr_down = list( max(pt_corr[imu]-pt_err[imu], 0.0) for imu,mu in enumerate(muons) )
+            self.out.fillBranch("Muon_correctedUp_pt",  pt_corr_up)
+            self.out.fillBranch("Muon_correctedDown_pt",  pt_corr_down)
 
         return True
 

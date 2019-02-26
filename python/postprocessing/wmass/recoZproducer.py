@@ -6,6 +6,15 @@ from PhysicsTools.NanoAODTools.postprocessing.framework.datamodel import Collect
 from PhysicsTools.NanoAODTools.postprocessing.framework.eventloop import Module
 from PhysicsTools.NanoAODTools.postprocessing.wmass.CSVariables import getCSangles
 
+def format_name(tag_mu="", syst_mu="", tag_met="", syst_met="", ispostfix=True):
+    out = "%s%s%s%s" % (("_"+tag_mu) if tag_mu!="" else "",
+                        ("_"+syst_mu) if syst_mu!="" else "",
+                        ("_"+tag_met)  if tag_met!="" else "",
+                        ("_"+syst_met) if syst_met!="" else "")
+    if not ispostfix: 
+        out = out.lstrip('_')
+    return out
+
 class recoZproducer(Module):
     def __init__(self, isMC=True, mudict={}):
         self.mudict = mudict
@@ -19,8 +28,8 @@ class recoZproducer(Module):
         self.out = wrappedOutputTree
         for key_mu,mu in self.mudict.items() :
             for ivar_mu,var_mu in enumerate(mu["systs"]):
-                branch_label = ("GenFromRecoZ" if "gen" in key_mu else "RecoZ")
-                branch_label += ("%s%s" % (mu["tag"], var_mu))
+                branch_label = ("GenFromRecoZ" if key_mu=="GEN" else "RecoZ")
+                branch_label += format_name(mu["tag"], var_mu, "", "", True)
                 self.out.branch("%s_pt" % branch_label, "F")
                 self.out.branch("%s_phi" % branch_label, "F")
                 self.out.branch("%s_y" % branch_label, "F")
@@ -38,7 +47,6 @@ class recoZproducer(Module):
             genparticles = Collection(event, "GenPart")
         for key_mu,mu in self.mudict.items() :
             for ivar_mu,var_mu in enumerate(mu["systs"]):
-                branch_label = "%s%s" % (mu["tag"], var_mu)                
                 # fill with real values only if there are two muons
                 if event.Vtype in [2,3]:                    
                     # chose plus and negative muon                    
@@ -47,16 +55,9 @@ class recoZproducer(Module):
                     (idxP, idxN) = (event.Idx_mu1,event.Idx_mu2)
                     if muons[event.Idx_mu1].charge<0: (idxP, idxN) = (event.Idx_mu2,event.Idx_mu1)                     
                     # reco Z, based on Muons objects
-                    if "gen" not in key_mu:
-                        if var_mu=="":
-                            (muP_pt, muN_pt) = (getattr(muons[idxP], mu["tag"] + "pt"), getattr(muons[idxN], mu["tag"] + "pt"))
-                        else:
-                            if "Up" in var_mu:
-                                (muP_pt, muN_pt) = (max(getattr(muons[idxP], mu["tag"] + "pt") + getattr(muons[idxP], var_mu.rstrip("Up_") + "_pt"), 0.0), 
-                                                    max(getattr(muons[idxN], mu["tag"] + "pt") + getattr(muons[idxN], var_mu.rstrip("Up_") + "_pt"), 0.0))
-                            elif "Down" in var_mu:
-                                (muP_pt, muN_pt) = (max(getattr(muons[idxP], mu["tag"] + "pt") - getattr(muons[idxP], var_mu.rstrip("Down_")+ "_pt"), 0.0), 
-                                                    max(getattr(muons[idxN], mu["tag"] + "pt") - getattr(muons[idxN], var_mu.rstrip("Down_") + "_pt"), 0.0))
+                    if key_mu!="GEN":
+                        (muP_pt, muN_pt) = ( getattr(muons[idxP], format_name("",var_mu,"","pt", False)), 
+                                             getattr(muons[idxN], format_name("",var_mu, "","pt",False)) )
                         muP.SetPtEtaPhiM(muP_pt, muons[idxP].eta, muons[idxP].phi, muons[idxP].mass)
                         muN.SetPtEtaPhiM(muN_pt, muons[idxN].eta, muons[idxN].phi, muons[idxN].mass)
                     # gen Z, based on gen muons
@@ -69,8 +70,8 @@ class recoZproducer(Module):
                     Z = muP+muN
                     (Z_pt, Z_phi, Z_y, Z_mass) = (Z.Pt(), Z.Phi(), Z.Rapidity(), Z.M())
                     CStheta, CSphi = getCSangles(muP,muN)
-                    branch_label = ("GenFromRecoZ" if "gen" in key_mu else "RecoZ")
-                    branch_label += ("%s%s" % (mu["tag"], var_mu))
+                    branch_label = ("GenFromRecoZ" if key_mu=="GEN" else "RecoZ")
+                    branch_label += format_name(mu["tag"], var_mu, "", "", ispostfix=True)
                     self.out.fillBranch("%s_pt"  % branch_label, Z_pt)
                     self.out.fillBranch("%s_phi"  % branch_label, Z_phi)
                     self.out.fillBranch("%s_y"  % branch_label, Z_y)
