@@ -43,14 +43,14 @@ select_first_trial = True
 n_max_files = 2
 
 username = getUsernameFromSiteDB()
-path = '/home/users/%s/wmass/CMSSW_10_2_9/src/PhysicsTools/NanoAODTools/crab/' % username
+path = '/home/users/`whoami`/wmass/CMSSW_10_2_9/src/PhysicsTools/NanoAODTools/crab/'
 outdir_master = ("/gpfs/ddn/cms/user/%s/" % username)+"/NanoAOD-"+tag+"/"
 
-print "Reading inputs from",  bcolors.OKGREEN, 'postcrab_'+samples.rstrip('.txt')+'_'+tag+'.txt'
+print "Reading inputs from:",  bcolors.OKGREEN, 'postcrab_'+samples.rstrip('.txt')+'_'+tag+'.txt', bcolors.ENDC
 if pushback:
-    print "Pushing back to SRM area", bcolors.OKGREEN, "/gpfs/ddn/srm/cms/store/user/"+username,  bcolors.ENDC
+    print "Pushing back to SRM area:", bcolors.OKGREEN, "/gpfs/ddn/srm/cms/store/user/"+username,  bcolors.ENDC
 else:
-    print "Hadding to scratch area", bcolors.OKGREEN, outdir_master,  bcolors.ENDC
+    print "Hadding to scratch area:", bcolors.OKGREEN, outdir_master,  bcolors.ENDC
 
 fin = open('postcrab_'+samples.rstrip('.txt')+'_'+tag+'.txt', 'r')
 content = fin.readlines()
@@ -63,7 +63,7 @@ for sample_dir in sample_dirs:
     if idx_ext!=-1:
         ext = '_'+sample_dir.split('/')[-3][idx_ext:idx_ext+4]
     else:
-        print "No extensions found in", sample_dir.split('/')[-3]
+        print " => no extensions found in sample %s" % sample_dir.split('/')[-3]
     job_name = task_name.replace('_', '')
     script_name = 'hn_'+task_name
     fout = open(script_name+'.sh','w')
@@ -71,12 +71,15 @@ for sample_dir in sample_dirs:
     fout.write('cd '+path+'\n')
     fout.write('source /cvmfs/cms.cern.ch/cmsset_default.sh\n')
     fout.write('eval `scramv1 runtime -sh`\n')
-    fout.write('\n')    
+    fout.write('echo "Creating a proxy..."\n')
+    fout.write('voms-proxy-init --voms cms\n')
+    fout.write('\n')
     pos = sample_dir.find("cms")
     sample_dir_from_cms = sample_dir[pos-1:] 
     if not os.path.isdir(outdir_master):
         mkoutdirmastercmd = "mkdir "+outdir_master
-        print bcolors.OKBLUE, mkoutdirmastercmd, bcolors.ENDC
+        print '>', bcolors.OKBLUE, mkoutdirmastercmd, bcolors.ENDC
+        fout.write('echo "Creating a tmp directory..."\n')
         fout.write(mkoutdirmastercmd+'\n')
         if run=='shell': os.system(mkoutdirmastercmd)
     outdir = ""
@@ -86,7 +89,8 @@ for sample_dir in sample_dirs:
         outdir = outdir_master+"/"+sample_name+ext+"/"
     if not os.path.isdir(outdir):
         mkoutdircmd = "mkdir "+outdir
-        print bcolors.OKBLUE, mkoutdircmd, bcolors.ENDC
+        print '>', bcolors.OKBLUE, mkoutdircmd, bcolors.ENDC
+        fout.write('echo "Creating a tmp directory..."\n')
         fout.write(mkoutdircmd+'\n')
         if run=='shell': os.system(mkoutdircmd)                
     crab_trials = os.listdir(sample_dir)
@@ -96,14 +100,16 @@ for sample_dir in sample_dirs:
         files = [sample_dir+"/"+crab_trial+"/"+x for x in os.listdir(sample_dir+'/'+crab_trial) if "tree_" in x]
     nfiles = len(files)
     haddargs = outdir+"tree.root "
-    print "Found", bcolors.OKGREEN, "%s" % nfiles, bcolors.ENDC, "files"
+    print " => found", bcolors.OKGREEN, "%s" % nfiles, bcolors.ENDC, "files"
     for nf,f in enumerate(files):
         if nf<n_max_files:
             haddargs += f+" "
     haddcmd = "python ../scripts/haddnano.py "+haddargs
-    print bcolors.OKBLUE, haddcmd, bcolors.ENDC
+    print '>', bcolors.OKBLUE, haddcmd, bcolors.ENDC
+    fout.write('echo "Running hadd..."\n')
     fout.write(haddcmd+'\n')
     if run=='shell': 
+        os.system('voms-proxy-init --voms cms')
         os.system(haddcmd)
         if os.path.isfile(outdir+"tree.root"): print "File", bcolors.OKBLUE, outdir+"tree.root", bcolors.ENDC, "saved."
         else: print bcolors.FAIL, "File "+outdir+"tree.root NOT found.", bcolors.ENDC         
@@ -113,7 +119,6 @@ for sample_dir in sample_dirs:
         if run=='shell':
             if os.path.isfile(outdir+"tree.root"):
                 print "File:", bcolors.OKGREEN, outdir+"tree.root", bcolors.ENDC, "found. Move back to SRM"
-                os.system('voms-proxy-init --voms cms')
                 os.system(pushbackcmd)
                 if os.path.isfile(sample_dir+"/tree.root"):
                     print "File:", bcolors.OKGREEN, sample_dir+"/tree.root", bcolors.ENDC, "is in SRM. Remove tmp files" 
@@ -126,15 +131,16 @@ for sample_dir in sample_dirs:
             else:
                 print "File:", bcolors.FAIL, outdir+"tree.root", bcolors.ENDC, "NOT found."                
         elif run=='batch':
-            fout.write('voms-proxy-init --voms cms\n')
             fout.write(pushbackcmd+'\n')
             rmcmd = "rm -r "+outdir
             print bcolors.OKBLUE, rmcmd, bcolors.ENDC
+            fout.write('echo "Removing tmp directory..."\n')
             fout.write(rmcmd+'\n')
+            fout.write('echo "Done!"\n')
     fout.close()
     if run=='batch': 
         os.system('chmod +x '+script_name+'.sh')
-        submit_to_queue = 'bsub -q local -n 8 -J '+job_name+' -o '+path+'/'+script_name+'.stdout'+' -e '+path+'/'+script_name+'.stderr'+' -cwd `pwd` '+'./'+script_name+'.sh'
+        submit_to_queue = 'bsub -q cms -J '+job_name+' -o '+path+'/'+script_name+'.stdout'+' -e '+path+'/'+script_name+'.stderr'+' -cwd `pwd` '+path+'/'+script_name+'.sh'
         print bcolors.OKBLUE, submit_to_queue, bcolors.ENDC
         os.system(submit_to_queue)
         time.sleep( 1.0 )
