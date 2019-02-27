@@ -22,10 +22,6 @@ from PhysicsTools.NanoAODTools.postprocessing.wmass.genVproducer import *
 from PhysicsTools.NanoAODTools.postprocessing.wmass.recoZproducer import *
 from PhysicsTools.NanoAODTools.postprocessing.wmass.harmonicWeights import *
 
-def not_applicable():
-    print "Not applicable"
-    return
-
 class bcolors:
     HEADER = '\033[95m'
     OKBLUE = '\033[94m'
@@ -114,7 +110,7 @@ if isMC:
     jmeCorrections = lambda : jetmetUncertaintiesProducer(era=str(dataYear), globalTag=jecTag, jesUncertainties=jmeUncert, redoJEC=redojec, saveJets=False)
 else:
     if redojec:
-        jmeCorrections = lambda : jetRecalib(globalTag=jecTag)
+        jmeCorrections = lambda : jetRecalib(globalTag=jecTag, saveJets=False)
     else:
         jmeCorrections = None
         print bcolors.OKBLUE, "No module %s will be run" % "jetRecalib", bcolors.ENDC
@@ -125,18 +121,18 @@ doJERVar = True
 doJESVar = True
 doUnclustVar = True
 metdict = {
-    "PF"    : { "tag" : "MET",      "systs"  : [""] },
+    "PF" : { "tag" : "MET",  "systs"  : [""] },
     #"TK"    : { "tag" : "TkMET",    "systs"  : [""] },
     #"puppi" : { "tag" : "PuppiMET", "systs"  : [""] },
     }
 if isMC:
-    metdict["gen"] = {"tag" : "GenMET", "systs"  : [""]}
+    metdict["GEN"] = {"tag" : "GenMET", "systs"  : [""]}
     if doJERVar:
-        metdict["PF"]["systs"].extend( ["_nom", "_jerUp", "_jerDown"] )
+        metdict["PF"]["systs"].extend( ["nom", "jerUp", "jerDown"] )
     if doJESVar:
-        metdict["PF"]["systs"].extend( ["_jesTotalUp", "_jesTotalDown"] )
+        metdict["PF"]["systs"].extend( ["jesTotalUp", "jesTotalDown"] )
     if doUnclustVar:
-        metdict["PF"]["systs"].extend( ["_unclustEnUp", "_unclustEnDown"] )
+        metdict["PF"]["systs"].extend( ["unclustEnUp", "unclustEnDown"] )
 
 ################################################ PU
 #pu reweight modules
@@ -156,14 +152,14 @@ elif dataYear==2018:
     print bcolors.OKBLUE, "No module %s will be run" % "muonScaleRes", bcolors.ENDC
     
 # muon dictionary
-mudict = { "PF" : { "tag" : "", "systs" : [""] } }
+mudict = { "PF" : { "tag" : "Muon", "systs" : [""] } }
 if dataYear in [2016,2017]:
-    mudict["roccor"] = { "tag" : "corrected_",   "systs"  : [""] }
+    mudict["roccor"] = { "tag" : "Muon",   "systs"  : ["corrected"] }
 if isMC:
-    mudict["gen_bare"] = { "tag" : "_bare",  "systs" : [""] }
+    mudict["GEN"] = { "tag" : "GenMuon",  "systs" : ["bare"] }
     # these exist only for 2017
     if dataYear==2017:
-        mudict["roccor"]["systs"] = ["", "sys_uncertUp_",  "sys_uncertDown_"]    
+        mudict["roccor"]["systs"] = ["corrected", "correctedUp",  "correctedDown"]    
 
 ################################################
 
