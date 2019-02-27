@@ -74,7 +74,7 @@ if __name__ == '__main__':
     import os
 
     print 'Creating file '+'postcrab-'+tag+'.txt for crab submission '+tag
-    fout = open('postcrab_'+samples.rstrip('.txt')+'_'+tag+'.txt', 'w') 
+    fout = open('postcrab_'+samples.rstrip('.txt')+'_'+tag+'.txt', 'a') 
 
     if run in ['submit', 'dryrun', 'debug']:
         print 'Cleaning the ../data/jme/ directory from unnecessary .txt files'

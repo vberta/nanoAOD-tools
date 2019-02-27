@@ -42,9 +42,20 @@ import subprocess
 select_first_trial = True
 n_max_files = 2
 
+# needed for CRAB utilities and lcg tools
+os.system('voms-proxy-init --voms cms')
+
 username = getUsernameFromSiteDB()
 path = '/home/users/`whoami`/wmass/CMSSW_10_2_9/src/PhysicsTools/NanoAODTools/crab/'
 outdir_master = "/gpfs/ddn/cms/user/%s/NanoAOD%s-%s/" % (username, str(dataYear), tag)
+
+outdir_proxy = "/gpfs/ddn/cms/user/%s/proxy/" % username
+if not os.path.isdir(outdir_proxy):
+    os.system('mkdri '+outdir_proxy)
+proxy_name = os.environ['X509_USER_PROXY'].split('/')[2]
+cpproxycmd = 'cp %s %s' %  (os.environ['X509_USER_PROXY'], outdir_proxy+proxy_name)
+os.system(cpproxycmd)
+print '>', bcolors.OKBLUE, cpproxycmd, bcolors.ENDC
 
 print "Reading inputs from:",  bcolors.OKGREEN, 'postcrab_'+samples.rstrip('.txt')+'_'+tag+'.txt', bcolors.ENDC
 if pushback:
@@ -72,7 +83,7 @@ for sample_dir in sample_dirs:
     fout.write('source /cvmfs/cms.cern.ch/cmsset_default.sh\n')
     fout.write('eval `scramv1 runtime -sh`\n')
     fout.write('echo "Creating a proxy..."\n')
-    fout.write('voms-proxy-init --voms cms\n')
+    fout.write('export X509_USER_PROXY=%s' % outdir_proxy+proxy_name+'\n')
     fout.write('\n')
     pos = sample_dir.find("cms")
     sample_dir_from_cms = sample_dir[pos-1:] 
@@ -109,7 +120,6 @@ for sample_dir in sample_dirs:
     fout.write('echo "Running hadd..."\n')
     fout.write(haddcmd+'\n')
     if run=='shell': 
-        os.system('voms-proxy-init --voms cms')
         os.system(haddcmd)
         if os.path.isfile(outdir+"tree.root"): print "File", bcolors.OKBLUE, outdir+"tree.root", bcolors.ENDC, "saved."
         else: print bcolors.FAIL, "File "+outdir+"tree.root NOT found.", bcolors.ENDC         
