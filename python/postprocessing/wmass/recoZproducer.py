@@ -71,7 +71,7 @@ class recoZproducer(Module):
                     (Z_pt, Z_phi, Z_y, Z_mass) = (Z.Pt(), Z.Phi(), Z.Rapidity(), Z.M())
                     CStheta, CSphi = getCSangles(muP,muN)
                     branch_label = ("GenFromRecoZ" if key_mu=="GEN" else "RecoZ")
-                    branch_label += format_name(mu["tag"], var_mu, "", "", ispostfix=True)
+                    branch_label += format_name(mu["tag"], var_mu, "", "", True)
                     self.out.fillBranch("%s_pt"  % branch_label, Z_pt)
                     self.out.fillBranch("%s_phi"  % branch_label, Z_phi)
                     self.out.fillBranch("%s_y"  % branch_label, Z_y)
