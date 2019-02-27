@@ -38,7 +38,7 @@ class additionalVariables(Module):
                         if ("Up" in var_mu or "Down" in var_mu) and ("Up" in var_met or "Down" in var_met):
                             continue
                         # skip mixed reco-gen objects
-                        if (key_met=="GEN" and key_mu!="GEN") or (key_mu!="GEN" and key_met=="GEN"):
+                        if (key_met=="GEN" and key_mu!="GEN") or (key_met!="GEN" and key_mu=="GEN"):
                             continue
                         title_label = "MET: "+met["tag"]+" (syst: "+var_met+"), Muon: "+mu["tag"]+" (syst: "+var_mu+")"
                         branch_label_mu = format_name(mu["tag"], var_mu, met["tag"], var_met, False)
@@ -86,11 +86,25 @@ class additionalVariables(Module):
                     for ivar_met,var_met in enumerate(met["systs"]):
                         if ("Up" in var_mu or "Down" in var_mu) and ("Up" in var_met or "Down" in var_met):
                             continue
-                        if (key_met=="GEN" and key_mu!="GEN") or (key_mu!="GEN" and key_met=="GEN"):
+                        if (key_met=="GEN" and key_mu!="GEN") or (key_met!="GEN" and key_mu=="GEN"):
                             continue
                         branch_label_mu = format_name(mu["tag"], var_mu, met["tag"], var_met, False)
                         met_pt  = getattr(event,format_name(met["tag"], var_met, "", "pt" ,False))
                         met_phi = getattr(event,format_name(met["tag"], var_met, "", "phi",False))
+
+                        # MET has to be corrected for different mu.pt definitions
+                        if key_mu not in ["GEN", "PF"]:
+                            met_px, met_py = met_pt*math.cos(met_phi),  met_pt*math.sin(met_phi)
+                            for imuon,muon in enumerate(muons): 
+                                mu_pt = getattr(muon, format_name("",var_mu, "", "pt", False))
+                                muon_phi = muon.phi
+                                met_px -= (mu_pt*math.cos(muon_phi) - getattr(muon, format_name("","","","pt",False))*math.cos(muon_phi) )
+                                met_py -= (mu_pt*math.sin(muon_phi) - getattr(muon, format_name("","","","pt",False))*math.sin(muon_phi))
+                            #print "%s-%s before: %s, %s " % (key_mu, var_mu, met_pt,met_phi)
+                            met_pt = math.sqrt(met_px**2 + met_py**2)
+                            muon_phi = math.atan2(met_py,met_px)
+                            #print "%s-%s after: %s, %s " % (key_mu, var_mu, met_pt,met_phi)
+                            
                         for imuon,muon in enumerate(muons) :
                             # Reco muons
                             if key_mu!="GEN":
@@ -108,7 +122,7 @@ class additionalVariables(Module):
                             
                             # W-like (filled only when there are 2 muons)
                             if event.Vtype in [2,3] and imuon in [event.Idx_mu1, event.Idx_mu2]:                                
-                                metWlike_px, metWlike_py = met_pt*math.sin(met_phi), met_pt*math.cos(met_phi) 
+                                metWlike_px, metWlike_py = met_pt*math.cos(met_phi), met_pt*math.sin(met_phi) 
                                 # nu-like muon is the OTHER muon wrt the one being analyzed
                                 nuLike_muon = muons[event.Idx_mu2] if imuon==event.Idx_mu1 else muons[event.Idx_mu1]
                                 if key_mu!="GEN":
@@ -121,8 +135,8 @@ class additionalVariables(Module):
                                         nuLike_mu_pt, nuLike_muon_phi, nuLike_muon_mass = nuLike_genMu.pt, nuLike_genMu.phi, nuLike_genMu.mass
                                     else:
                                         nuLike_mu_pt, nuLike_muon_phi, nuLike_muon_mass = 0.,0.,0.
-                                metWlike_px += nuLike_muon.pt*math.sin(nuLike_muon.phi)
-                                metWlike_py += nuLike_muon.pt*math.cos(nuLike_muon.phi) 
+                                metWlike_px += nuLike_muon.pt*math.cos(nuLike_muon.phi)
+                                metWlike_py += nuLike_muon.pt*math.sin(nuLike_muon.phi) 
                                 metWlike_pt = math.sqrt(metWlike_px**2 + metWlike_py**2)
                                 metWlike_phi = math.atan2(metWlike_py, metWlike_px)
                                 (Wlikemt,Wlikehpt,Wlikehphi,Wlikemet_par,Wlikemet_per) = evaluateMt( mu_pt, muon_phi, muon_mass, metWlike_pt , metWlike_phi)
