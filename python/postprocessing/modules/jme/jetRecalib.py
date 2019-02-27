@@ -9,7 +9,7 @@ from PhysicsTools.NanoAODTools.postprocessing.tools import matchObjectCollection
 from PhysicsTools.NanoAODTools.postprocessing.modules.jme.JetReCalibrator import JetReCalibrator
 
 class jetRecalib(Module):
-    def __init__(self,  globalTag, jetType = "AK4PFchs"):
+    def __init__(self,  globalTag, jetType = "AK4PFchs", saveJets=True):
 
         if "AK4" in jetType : 
             self.jetBranchName = "Jet"
@@ -23,6 +23,7 @@ class jetRecalib(Module):
         # To do : change to real values
         self.jmsVals = [1.00, 0.99, 1.01]
         
+        self.saveJets=saveJets
 
         self.jesInputFilePath = os.environ['CMSSW_BASE'] + "/src/PhysicsTools/NanoAODTools/data/jme/"
 
@@ -42,9 +43,10 @@ class jetRecalib(Module):
 
     def beginFile(self, inputFile, outputFile, inputTree, wrappedOutputTree):
         self.out = wrappedOutputTree
-        self.out.branch("%s_pt_nom" % self.jetBranchName, "F", lenVar=self.lenVar)
-        self.out.branch("MET_pt_nom" , "F")
-        self.out.branch("MET_phi_nom", "F")
+        if self.saveJets:
+            self.out.branch("%s_nom_pt" % self.jetBranchName, "F", lenVar=self.lenVar)
+        self.out.branch("MET_nom_pt" , "F")
+        self.out.branch("MET_nom_phi", "F")
             
                         
     def endFile(self, inputFile, outputFile, inputTree, wrappedOutputTree):
@@ -75,9 +77,10 @@ class jetRecalib(Module):
                 jet_sinPhi = math.sin(jet.phi)
                 met_px_nom = met_px_nom - (jet_pt_nom - jet.pt)*jet_cosPhi
                 met_py_nom = met_py_nom - (jet_pt_nom - jet.pt)*jet_sinPhi
-        self.out.fillBranch("%s_pt_nom" % self.jetBranchName, jets_pt_nom)
-        self.out.fillBranch("MET_pt_nom", math.sqrt(met_px_nom**2 + met_py_nom**2))
-        self.out.fillBranch("MET_phi_nom", math.atan2(met_py_nom, met_px_nom))        
+        if self.saveJets:
+            self.out.fillBranch("%s_pt_nom" % self.jetBranchName, jets_pt_nom)
+        self.out.fillBranch("MET_nom_pt", math.sqrt(met_px_nom**2 + met_py_nom**2))
+        self.out.fillBranch("MET_nom_phi", math.atan2(met_py_nom, met_px_nom))        
 
         return True
 

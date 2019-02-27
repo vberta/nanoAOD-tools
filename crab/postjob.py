@@ -44,7 +44,7 @@ n_max_files = 2
 
 username = getUsernameFromSiteDB()
 path = '/home/users/`whoami`/wmass/CMSSW_10_2_9/src/PhysicsTools/NanoAODTools/crab/'
-outdir_master = ("/gpfs/ddn/cms/user/%s/" % username)+"/NanoAOD-"+tag+"/"
+outdir_master = "/gpfs/ddn/cms/user/%s/NanoAOD%s-%s/" % (username, str(dataYear), tag)
 
 print "Reading inputs from:",  bcolors.OKGREEN, 'postcrab_'+samples.rstrip('.txt')+'_'+tag+'.txt', bcolors.ENDC
 if pushback:
