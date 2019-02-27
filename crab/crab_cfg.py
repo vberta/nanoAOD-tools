@@ -63,7 +63,7 @@ if not isMC:
     else:
         config.Data.lumiMask = 'TEST'
     print "Using lumiMask", config.Data.lumiMask
-config.Data.outLFNDirBase = '/store/user/%s/NanoAOD-%s' % (getUsernameFromSiteDB(), tag)
+config.Data.outLFNDirBase = '/store/user/%s/NanoAOD%s-%s' % (getUsernameFromSiteDB(), str(dataYear), tag)
 config.Data.publication = False
 config.Data.outputDatasetTag = 'TEST'
 config.section_("Site")
