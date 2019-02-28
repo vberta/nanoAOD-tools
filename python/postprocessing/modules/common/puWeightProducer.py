@@ -12,7 +12,7 @@ class puWeightProducer(Module):
         if doSysVar:
             self.targeth_plus = self.loadHisto(targetfile,targethist+"_plus")
             self.targeth_minus = self.loadHisto(targetfile,targethist+"_minus")
-        self.fixLargeWeights = True
+        self.fixLargeWeights = True # temporary fix
 	if myfile != "auto" :
 		self.autoPU=False
 	        self.myh = self.loadHisto(myfile,myhist)
