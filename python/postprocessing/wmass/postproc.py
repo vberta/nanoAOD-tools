@@ -168,6 +168,10 @@ if isMC:
     if dataYear==2017:
         mudict["roccor"]["systs"] = ["corrected", "correctedUp",  "correctedDown"]    
 
+################################################ GEN
+
+Wtypes = ['bare', 'preFSR', 'dress']
+
 ################################################
 
 ##This is temporary for testing purpose
@@ -176,8 +180,8 @@ input_dir = "/gpfs/ddn/srm/cms/store/"
 ifileMC = ""
 if dataYear==2016:
     ifileMC = "mc/RunIISummer16NanoAODv3/DYJetsToLL_Pt-50To100_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/NANOAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v2/280000/26DE6A2F-9329-E911-8766-002590DE6E8A.root"
-    input_dir = "/gpfs/ddn/srm/cms/store/user/emanca/"
-    ifileMC = "NanoWMassV4/WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/NanoWMass/190218_175825/0000/myNanoProdMc_NANO_41.root"
+    #input_dir = "/gpfs/ddn/srm/cms/store/user/emanca/"
+    #ifileMC = "NanoWMassV4/WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/NanoWMass/190218_175825/0000/myNanoProdMc_NANO_41.root"
 elif dataYear==2017:
     ifileMC = "mc/RunIIFall17NanoAODv4/DYJetsToLL_0J_TuneCP5_13TeV-amcatnloFXFX-pythia8/NANOAODSIM/PU2017_12Apr2018_Nano14Dec2018_102X_mc2017_realistic_v6-v1/20000/41874784-9F25-7C49-B4E3-6EECD93B77CA.root"    
 elif dataYear==2018:
@@ -196,20 +200,20 @@ modules = []
 
 if isMC:
     input_files.append( input_dir+ifileMC )
-    modules = [puWeightProducer(), 
-               preSelection(isMC=isMC, passall=passall, dataYear=dataYear), 
-               lepSF(),
-               jmeCorrections(),
-               recoZproducer(mudict=mudict, isMC=isMC),
-               additionalVariables(isMC=isMC, mudict=mudict, metdict=metdict), 
-               genLeptonSelectModule(), 
-               CSAngleModule(), 
-               genVproducerModule(),
-               harmonicWeightsModule(),
-               ]
-    if muonScaleRes!=None: modules.insert(3, muonScaleRes())
-    if genOnly:
-        modules = [genLeptonSelectModule(),CSAngleModule(),genVproducerModule()]
+    if not genOnly:
+        modules = [puWeightProducer(), 
+                   preSelection(isMC=isMC, passall=passall, dataYear=dataYear), 
+                   lepSF(),
+                   jmeCorrections(),
+                   recoZproducer(mudict=mudict, isMC=isMC),
+                   additionalVariables(isMC=isMC, mudict=mudict, metdict=metdict), 
+                   genLeptonSelection(Wtypes=Wtypes), 
+                   CSVariables(Wtypes=Wtypes), 
+                   genVproducer(Wtypes=Wtypes),
+                   harmonicWeights(Wtypes=Wtypes),
+                   ]
+        if muonScaleRes!=None: modules.insert(3, muonScaleRes())
+    else: modules = [genLeptonSelection(Wtypes=Wtypes),CSVariables(Wtypes=Wtypes),genVproducer(Wtypes=Wtypes)]
         
 else:
     input_files.append( input_dir+ifileDATA )
