@@ -140,7 +140,7 @@ puWeightProducer = puWeight_2016
 if dataYear==2017:
     puWeightProducer = puWeight_2017
 elif dataYear==2018:
-    puWeightProducer = puWeight_2017 # FIXME
+    puWeightProducer = puWeight_2018 # FIXME
 
 ################################################ Muons
 #Rochester correction for muons

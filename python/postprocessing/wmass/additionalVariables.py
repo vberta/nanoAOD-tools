@@ -150,7 +150,6 @@ class additionalVariables(Module):
                             Recoil_phi_vec[imuon] = hphi
                             met_par_vec[imuon] = met_par
                             met_per_vec[imuon] = met_per
-
                         self.out.fillBranch("%s_mt" % branch_label_mu, Mt_vec)
                         self.out.fillBranch("%s_hpt"  % branch_label_mu, Recoil_pt_vec)
                         self.out.fillBranch("%s_hphi" % branch_label_mu, Recoil_phi_vec)
