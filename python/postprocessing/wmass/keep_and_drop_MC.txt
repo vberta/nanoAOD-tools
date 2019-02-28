@@ -5,10 +5,7 @@ keep Pileup*
 keep luminosityBlock*
 keep genWeight*
 keep GenPart*
-drop GenDressedLepton*
 keep Generator*
-drop LHE*
-drop LHEPart*
 keep LHEPdfWeight*
 keep LHEScaleWeight*
 keep LHEWeight*

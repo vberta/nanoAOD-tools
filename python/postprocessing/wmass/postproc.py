@@ -168,6 +168,10 @@ if isMC:
     if dataYear==2017:
         mudict["roccor"]["systs"] = ["corrected", "correctedUp",  "correctedDown"]    
 
+################################################ GEN
+
+Wtypes = ['bare', 'preFSR', 'dress']
+
 ################################################
 
 ##This is temporary for testing purpose
@@ -196,20 +200,20 @@ modules = []
 
 if isMC:
     input_files.append( input_dir+ifileMC )
-    modules = [puWeightProducer(), 
-               preSelection(isMC=isMC, passall=passall, dataYear=dataYear), 
-               lepSF(),
-               jmeCorrections(),
-               recoZproducer(mudict=mudict, isMC=isMC),
-               additionalVariables(isMC=isMC, mudict=mudict, metdict=metdict), 
-               genLeptonSelectModule(), 
-               CSAngleModule(), 
-               genVproducerModule(),
-               harmonicWeightsModule(),
-               ]
-    if muonScaleRes!=None: modules.insert(3, muonScaleRes())
-    if genOnly:
-        modules = [genLeptonSelectModule(),CSAngleModule(),genVproducerModule()]
+    if not genOnly:
+        modules = [puWeightProducer(), 
+                   preSelection(isMC=isMC, passall=passall, dataYear=dataYear), 
+                   lepSF(),
+                   jmeCorrections(),
+                   recoZproducer(mudict=mudict, isMC=isMC),
+                   additionalVariables(isMC=isMC, mudict=mudict, metdict=metdict), 
+                   genLeptonSelection(Wtypes=Wtypes), 
+                   CSVariables(Wtypes=Wtypes), 
+                   genVproducer(Wtypes=Wtypes),
+                   harmonicWeights(Wtypes=Wtypes),
+                   ]
+        if muonScaleRes!=None: modules.insert(3, muonScaleRes())
+    else: modules = [genLeptonSelection(Wtypes=Wtypes),CSVariables(Wtypes=Wtypes),genVproducer(Wtypes=Wtypes)]
         
 else:
     input_files.append( input_dir+ifileDATA )

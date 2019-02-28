@@ -5,12 +5,14 @@ from PhysicsTools.NanoAODTools.postprocessing.framework.datamodel import Collect
 from PhysicsTools.NanoAODTools.postprocessing.framework.eventloop import Module
 
 
+def fiducial_muon(mu):
+    return (abs(mu.eta)<2.4 and mu.pt>10 and abs(mu.dxy)<0.05 and abs(mu.dz)<0.2)
 def loose_muon_id(mu):
-    return (abs(mu.eta)<2.4 and mu.pt>10 and abs(mu.dxy)<0.05 and abs(mu.dz)<0.2 and mu.isPFcand and mu.pfRelIso04_all< 0.30)
+    return (fiducial_muon(mu) and mu.isPFcand and mu.pfRelIso04_all< 0.25 and mu.pt>10)
 def medium_muon_id(mu):
-    return (abs(mu.eta)<2.4 and mu.pt>20 and abs(mu.dxy)<0.05 and abs(mu.dz)<0.2 and mu.mediumId and mu.pfRelIso04_all<=0.10)
+    return (fiducial_muon(mu) and mu.mediumId and mu.pfRelIso04_all<=0.15 and mu.pt>20)
 def medium_aiso_muon_id(mu):
-    return (abs(mu.eta)<2.4 and mu.pt>20 and abs(mu.dxy)<0.05 and abs(mu.dz)<0.2 and mu.mediumId and mu.pfRelIso04_all >0.10 and mu.pfRelIso04_all<0.30)
+    return (fiducial_muon(mu) and mu.mediumId and mu.pfRelIso04_all> 0.15 and mu.pt>20)
 def veto_electron_id(ele):
     etaSC = ele.eta + ele.deltaEtaSC
     if (abs(etaSC) <= 1.479):
@@ -107,18 +109,20 @@ class preSelection(Module):
 
         event_flag = -1        
         (idx1, idx2) = (-1, -1)
+        # Z-like event
+        if len(loose_muons)>=2:
+            if len(loose_muons)==2:
+                (idx1, idx2) = (loose_muons[0][1], loose_muons[1][1])
+                event_flag = 2 if (loose_muons[0][0].charge+loose_muons[1][0].charge)==0 else 3
+            else: event_flag = -1
         # W-like event: 1 loose, 1 medium
-        if len(medium_muons)==1 and len(loose_muons)==1:
+        elif len(medium_muons)==1:
             event_flag = 0
             (idx1, idx2) = (medium_muons[0][1], -1)
         # Fake-like event
         elif len(medium_muons)==0 and len(medium_aiso_muons)==1:
             event_flag = 1
             (idx1, idx2) = (medium_aiso_muons[0][1], -1)
-        # Z-like event
-        elif len(loose_muons)==2:
-            (idx1, idx2) = (loose_muons[0][1], loose_muons[1][1])
-            event_flag = 2 if (loose_muons[0][0].charge+loose_muons[1][0].charge)==0 else 3
         # anything else        
         else:   
             event_flag = -1
