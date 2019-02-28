@@ -42,6 +42,7 @@ parser.add_argument('-dataYear',  '--dataYear', type=int, default=2016,   help="
 parser.add_argument('-jesUncert', '--jesUncert',type=str, default="Total",help="")
 parser.add_argument('-redojec',   '--redojec',  type=int, default=0,      help="")
 parser.add_argument('-runPeriod', '--runPeriod',type=str, default="B",    help="")
+parser.add_argument('-genOnly',    '--genOnly',type=int, default=0,    help="")
 args = parser.parse_args()
 isMC      = args.isMC
 crab      = args.crab
@@ -51,12 +52,18 @@ maxEvents = args.maxEvents
 runPeriod = args.runPeriod
 redojec   = args.redojec
 jesUncert = args.jesUncert
-
+genOnly   = args.genOnly
+ 
 print "isMC =", bcolors.OKGREEN, isMC, bcolors.ENDC, \
+    "genOnly =", bcolors.OKGREEN, genOnly, bcolors.ENDC, \
     "crab =", bcolors.OKGREEN, crab, bcolors.ENDC, \
     "passall =", bcolors.OKGREEN, passall,  bcolors.ENDC, \
     "dataYear =",  bcolors.OKGREEN,  dataYear,  bcolors.ENDC, \
     "maxEvents =", bcolors.OKGREEN, maxEvents, bcolors.ENDC 
+
+if genOnly and not isMC:
+    print "Cannot run with genOnly option and data simultaneously"
+    exit(1)
 
 # run with crab
 if crab:
@@ -165,12 +172,12 @@ if isMC:
 
 ##This is temporary for testing purpose
 input_dir = "/gpfs/ddn/srm/cms/store/"
-#input_dir = "/gpfs/ddn/srm/cms/store/user/emanca/"
 
 ifileMC = ""
 if dataYear==2016:
     ifileMC = "mc/RunIISummer16NanoAODv3/DYJetsToLL_Pt-50To100_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/NANOAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v2/280000/26DE6A2F-9329-E911-8766-002590DE6E8A.root"
-    #ifileMC = "NanoWMassV4/WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/NanoWMass/190218_175825/0000/myNanoProdMc_NANO_41.root"
+    input_dir = "/gpfs/ddn/srm/cms/store/user/emanca/"
+    ifileMC = "NanoWMassV4/WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/NanoWMass/190218_175825/0000/myNanoProdMc_NANO_41.root"
 elif dataYear==2017:
     ifileMC = "mc/RunIIFall17NanoAODv4/DYJetsToLL_0J_TuneCP5_13TeV-amcatnloFXFX-pythia8/NANOAODSIM/PU2017_12Apr2018_Nano14Dec2018_102X_mc2017_realistic_v6-v1/20000/41874784-9F25-7C49-B4E3-6EECD93B77CA.root"    
 elif dataYear==2018:
@@ -201,6 +208,8 @@ if isMC:
                harmonicWeightsModule(),
                ]
     if muonScaleRes!=None: modules.insert(3, muonScaleRes())
+    if genOnly:
+        modules = [genLeptonSelectModule(),CSAngleModule(),genVproducerModule()]
         
 else:
     input_files.append( input_dir+ifileDATA )
@@ -212,12 +221,20 @@ else:
     if muonScaleRes!=None: modules.insert(1, muonScaleRes())
 
 treecut = ("Entry$<" + str(maxEvents) if maxEvents > 0 else None)
+kd_file = "keep_and_drop"
+if isMC:
+    kd_file += "_MC"
+    if genOnly: kd_file+= "GenOnly"
+else:
+    kd_file += "_Data"
+kd_file += ".txt"
+
 p = PostProcessor(outputDir=".",  
                   inputFiles=(input_files if crab==0 else inputFiles()),
                   cut=treecut,      
                   modules=modules,
                   provenance=True,
-                  outputbranchsel="keep_and_drop_"+("MC" if isMC else "Data")+".txt",
+                  outputbranchsel=kd_file,
                   fwkJobReport=(False if crab==0 else True),
                   jsonInput=(None if crab==0 else runsAndLumis())
                   )

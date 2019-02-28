@@ -3,6 +3,7 @@ keep event*
 keep run*
 keep Pileup*
 keep luminosityBlock*
+keep genWeight*
 keep GenPart*
 drop GenDressedLepton*
 keep Generator*
