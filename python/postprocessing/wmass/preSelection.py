@@ -5,12 +5,14 @@ from PhysicsTools.NanoAODTools.postprocessing.framework.datamodel import Collect
 from PhysicsTools.NanoAODTools.postprocessing.framework.eventloop import Module
 
 
+def fiducial_muon(mu):
+    return (abs(mu.eta)<2.4 and mu.pt>10 and abs(mu.dxy)<0.05 and abs(mu.dz)<0.2)
 def loose_muon_id(mu):
-    return (abs(mu.eta)<2.4 and mu.pt>10 and abs(mu.dxy)<0.05 and abs(mu.dz)<0.2 and mu.isPFcand and mu.pfRelIso04_all< 0.30)
+    return (fiducial_muon(mu) and mu.isPFcand and mu.pfRelIso04_all< 0.25 and mu.pt>10)
 def medium_muon_id(mu):
-    return (abs(mu.eta)<2.4 and mu.pt>20 and abs(mu.dxy)<0.05 and abs(mu.dz)<0.2 and mu.mediumId and mu.pfRelIso04_all<=0.10)
+    return (fiducial_muon(mu) and mu.mediumId and mu.pfRelIso04_all<=0.15 and mu.pt>20)
 def medium_aiso_muon_id(mu):
-    return (abs(mu.eta)<2.4 and mu.pt>20 and abs(mu.dxy)<0.05 and abs(mu.dz)<0.2 and mu.mediumId and mu.pfRelIso04_all >0.10 and mu.pfRelIso04_all<0.30)
+    return (fiducial_muon(mu) and mu.mediumId and mu.pfRelIso04_all> 0.15 and mu.pt>20)
 def veto_electron_id(ele):
     etaSC = ele.eta + ele.deltaEtaSC
     if (abs(etaSC) <= 1.479):
@@ -61,7 +63,8 @@ class preSelection(Module):
         pass
     def beginFile(self, inputFile, outputFile, inputTree, wrappedOutputTree):
         self.out = wrappedOutputTree
-        self.out.branch("HLT_SingleMuon", "B", title="Event passes OR of HLT triggers")
+        self.out.branch("HLT_SingleMu24", "B", title="Event passes OR of HLT triggers at 24 GeV")
+        self.out.branch("HLT_SingleMu27", "B", title="Event passes OR of HLT triggers at 27 GeV")
         self.out.branch("Idx_mu1", "I", title="index of W-like muon / index of Z-like 1st muon")
         self.out.branch("Idx_mu2", "I", title="index of Z-like 2nd muon")
         self.out.branch("Vtype", "I", title="0:W-like; 1:Fake-like; 2:Z-like; 3:SS-dimuon")
@@ -75,14 +78,20 @@ class preSelection(Module):
 
         # Trigger bit
         if self.isMC==False:
-            triggers_OR = ["IsoMu24", "IsoTkMu24"]
+            triggers24_OR = ["IsoMu24", "IsoTkMu24"]
+            triggers27_OR = ["IsoMu27"]
         else:
-            triggers_OR = ["IsoMu24", "IsoTkMu24"]
-        HLT_pass = False
-        for hlt in triggers_OR:
+            triggers24_OR = ["IsoMu24", "IsoTkMu24"]
+            triggers27_OR = ["IsoMu27"]
+        HLT_pass24, HLT_pass27 = False, False
+        for hlt in triggers24_OR:
             if not hasattr(event, "HLT_"+hlt): continue
-            HLT_pass |= getattr(event, "HLT_"+hlt)
-        self.out.fillBranch("HLT_SingleMuon", int(HLT_pass))
+            HLT_pass24 |= getattr(event, "HLT_"+hlt)
+        self.out.fillBranch("HLT_SingleMu24", int(HLT_pass24))
+        for hlt in triggers27_OR:
+            if not hasattr(event, "HLT_"+hlt): continue
+            HLT_pass27 |= getattr(event, "HLT_"+hlt)
+        self.out.fillBranch("HLT_SingleMu27", int(HLT_pass27))
 
         # MET filters
         met_filters_AND = True
@@ -107,18 +116,20 @@ class preSelection(Module):
 
         event_flag = -1        
         (idx1, idx2) = (-1, -1)
+        # Z-like event
+        if len(loose_muons)>=2:
+            if len(loose_muons)==2:
+                (idx1, idx2) = (loose_muons[0][1], loose_muons[1][1])
+                event_flag = 2 if (loose_muons[0][0].charge+loose_muons[1][0].charge)==0 else 3
+            else: event_flag = -1
         # W-like event: 1 loose, 1 medium
-        if len(medium_muons)==1 and len(loose_muons)==1:
+        elif len(medium_muons)==1:
             event_flag = 0
             (idx1, idx2) = (medium_muons[0][1], -1)
         # Fake-like event
         elif len(medium_muons)==0 and len(medium_aiso_muons)==1:
             event_flag = 1
             (idx1, idx2) = (medium_aiso_muons[0][1], -1)
-        # Z-like event
-        elif len(loose_muons)==2:
-            (idx1, idx2) = (loose_muons[0][1], loose_muons[1][1])
-            event_flag = 2 if (loose_muons[0][0].charge+loose_muons[1][0].charge)==0 else 3
         # anything else        
         else:   
             event_flag = -1
@@ -127,7 +138,7 @@ class preSelection(Module):
         self.out.fillBranch("Idx_mu2", idx2)
         self.out.fillBranch("Vtype", event_flag)
 
-        if event_flag not in [0,1,2,3]: 
+        if (event_flag not in [0,1,2,3]) or not (HLT_pass24 or HLT_pass27): 
             return (False or self.passall)
 
         return True

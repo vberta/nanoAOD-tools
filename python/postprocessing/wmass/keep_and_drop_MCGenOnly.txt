@@ -1,0 +1,6 @@
+drop * 
+keep genWeight
+keep Generator*
+keep LHEPdfWeight*
+keep LHEScaleWeight*
+keep LHEWeight*
