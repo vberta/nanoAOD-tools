@@ -27,11 +27,13 @@ parser.add_argument('-isMC', '--isMC', type=int, default=1,      help="")
 parser.add_argument('-dataYear', '--dataYear',type=int, default=2016, help="")
 parser.add_argument('-run', '--run',type=str, default='batch', help="")
 parser.add_argument('-pushback', '--pushback',type=int, default=0, help="")
+parser.add_argument('-xrootd', '--xrootd',type=int, default=0, help="")
 args = parser.parse_args()
 tag = args.tag
 isMC = args.isMC
 dataYear = args.dataYear
 run = args.run
+xrootd = args.xrootd
 pushback = args.pushback
 samples = ('mc' if isMC else 'data')+'samples_'+str(dataYear)+'.txt'
 
@@ -40,7 +42,7 @@ samples = ('mc' if isMC else 'data')+'samples_'+str(dataYear)+'.txt'
 import subprocess
 
 select_first_trial = True
-n_max_files = 2
+n_max_files = 99
 
 # needed for CRAB utilities and lcg tools
 os.system('voms-proxy-init --voms cms')
@@ -104,11 +106,24 @@ for sample_dir in sample_dirs:
         fout.write('echo "Creating a tmp directory..."\n')
         fout.write(mkoutdircmd+'\n')
         if run=='shell': os.system(mkoutdircmd)                
-    crab_trials = os.listdir(sample_dir)
-    for crab_trial in crab_trials:
-        if select_first_trial and crab_trial!="0000":
-            continue
-        files = [sample_dir+"/"+crab_trial+"/"+x for x in os.listdir(sample_dir+'/'+crab_trial) if "tree_" in x]
+
+    if xrootd:
+        sample_dir_srmls = sample_dir.replace('/gpfs/ddn/srm/cms/', 'xrootd-cms.infn.it:1194 ls ')
+        crab_trial = "0000"
+        sample_dir_srmls += ("/"+crab_trial+"/")
+        print '>', bcolors.OKBLUE, 'xrdfs '+sample_dir_srmls, bcolors.ENDC
+        res = commands.getoutput('xrdfs '+sample_dir_srmls).split('\n')
+        files = []
+        for lres in res:
+            if 'tree_' not in lres: continue
+            files.append('root://xrootd-cms.infn.it/'+lres)
+    else:
+        crab_trials = os.listdir(sample_dir)
+        for crab_trial in crab_trials:
+            if select_first_trial and crab_trial!="0000":
+                continue
+            files = [sample_dir+"/"+crab_trial+"/"+x for x in os.listdir(sample_dir+'/'+crab_trial) if "tree_" in x]
+
     nfiles = len(files)
     haddargs = outdir+"tree.root "
     print " => found", bcolors.OKGREEN, "%s" % nfiles, bcolors.ENDC, "files"
@@ -151,7 +166,7 @@ for sample_dir in sample_dirs:
     if run=='batch': 
         os.system('chmod +x '+script_name+'.sh')
         submit_to_queue = 'bsub -q cms -J '+job_name+' -o '+path+'/'+script_name+'.stdout'+' -e '+path+'/'+script_name+'.stderr'+' -cwd `pwd` '+path+'/'+script_name+'.sh'
-        print bcolors.OKBLUE, submit_to_queue, bcolors.ENDC
+        print '>', bcolors.OKBLUE, submit_to_queue, bcolors.ENDC
         os.system(submit_to_queue)
         time.sleep( 1.0 )
         print "@@@@@ END JOB @@@@@"        
