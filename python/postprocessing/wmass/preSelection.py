@@ -63,7 +63,8 @@ class preSelection(Module):
         pass
     def beginFile(self, inputFile, outputFile, inputTree, wrappedOutputTree):
         self.out = wrappedOutputTree
-        self.out.branch("HLT_SingleMuon", "B", title="Event passes OR of HLT triggers")
+        self.out.branch("HLT_SingleMu24", "B", title="Event passes OR of HLT triggers at 24 GeV")
+        self.out.branch("HLT_SingleMu27", "B", title="Event passes OR of HLT triggers at 27 GeV")
         self.out.branch("Idx_mu1", "I", title="index of W-like muon / index of Z-like 1st muon")
         self.out.branch("Idx_mu2", "I", title="index of Z-like 2nd muon")
         self.out.branch("Vtype", "I", title="0:W-like; 1:Fake-like; 2:Z-like; 3:SS-dimuon")
@@ -77,14 +78,20 @@ class preSelection(Module):
 
         # Trigger bit
         if self.isMC==False:
-            triggers_OR = ["IsoMu24", "IsoTkMu24"]
+            triggers24_OR = ["IsoMu24", "IsoTkMu24"]
+            triggers27_OR = ["IsoMu27"]
         else:
-            triggers_OR = ["IsoMu24", "IsoTkMu24"]
-        HLT_pass = False
-        for hlt in triggers_OR:
+            triggers24_OR = ["IsoMu24", "IsoTkMu24"]
+            triggers27_OR = ["IsoMu27"]
+        HLT_pass24, HLT_pass27 = False, False
+        for hlt in triggers24_OR:
             if not hasattr(event, "HLT_"+hlt): continue
-            HLT_pass |= getattr(event, "HLT_"+hlt)
-        self.out.fillBranch("HLT_SingleMuon", int(HLT_pass))
+            HLT_pass24 |= getattr(event, "HLT_"+hlt)
+        self.out.fillBranch("HLT_SingleMu24", int(HLT_pass24))
+        for hlt in triggers27_OR:
+            if not hasattr(event, "HLT_"+hlt): continue
+            HLT_pass27 |= getattr(event, "HLT_"+hlt)
+        self.out.fillBranch("HLT_SingleMu27", int(HLT_pass27))
 
         # MET filters
         met_filters_AND = True
@@ -131,7 +138,7 @@ class preSelection(Module):
         self.out.fillBranch("Idx_mu2", idx2)
         self.out.fillBranch("Vtype", event_flag)
 
-        if event_flag not in [0,1,2,3]: 
+        if (event_flag not in [0,1,2,3]) or not (HLT_pass24 or HLT_pass27): 
             return (False or self.passall)
 
         return True

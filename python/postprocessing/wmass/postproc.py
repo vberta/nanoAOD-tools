@@ -124,18 +124,22 @@ else:
 
 ################################################ MET
 # MET dictionary 
-doJERVar = True
-doJESVar = True
+doJERVar     = True
+doJESVar     = True
 doUnclustVar = True
 metdict = {
     "PF" : { "tag" : "MET",  "systs"  : [""] },
     #"TK"    : { "tag" : "TkMET",    "systs"  : [""] },
     #"puppi" : { "tag" : "PuppiMET", "systs"  : [""] },
     }
+
+if jmeCorrections!=None:
+    metdict["PF"]["systs"].extend( ["nom"] ) 
+
 if isMC:
     metdict["GEN"] = {"tag" : "GenMET", "systs"  : [""]}
     if doJERVar:
-        metdict["PF"]["systs"].extend( ["nom", "jerUp", "jerDown"] )
+        metdict["PF"]["systs"].extend( ["jerUp", "jerDown"] )
     if doJESVar:
         metdict["PF"]["systs"].extend( ["jesTotalUp", "jesTotalDown"] )
     if doUnclustVar:
