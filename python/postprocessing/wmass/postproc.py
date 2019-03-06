@@ -12,7 +12,7 @@ from PhysicsTools.NanoAODTools.postprocessing.modules.common.puWeightProducer im
 from PhysicsTools.NanoAODTools.postprocessing.modules.jme.jetmetUncertainties import *
 from PhysicsTools.NanoAODTools.postprocessing.modules.jme.jetRecalib import *
 from PhysicsTools.NanoAODTools.postprocessing.modules.common.muonScaleResProducer import *
-from PhysicsTools.NanoAODTools.postprocessing.modules.common.lepSFProducer import *
+from PhysicsTools.NanoAODTools.postprocessing.modules.common.lepSFProducer_v2 import *
 
 from PhysicsTools.NanoAODTools.postprocessing.wmass.preSelection import *
 from PhysicsTools.NanoAODTools.postprocessing.wmass.additionalVariables import *
@@ -172,6 +172,30 @@ if isMC:
     if dataYear==2017:
         mudict["roccor"]["systs"] = ["corrected", "correctedUp",  "correctedDown"]    
 
+##Muon SF
+triggerHisto = {2016:['IsoMu24_OR_IsoTkMu24_PtEtaBins/pt_abseta_ratio', 'IsoMu24_OR_IsoTkMu24_PtEtaBins/pt_abseta_ratio'], 
+                2017:['IsoMu27_PtEtaBins/pt_abseta_ratio', 'IsoMu27_PtEtaBins/pt_abseta_ratio'], 
+                2018:['IsoMu24_PtEtaBins/pt_abseta_ratio', 'IsoMu24_PtEtaBins/pt_abseta_ratio']
+                }
+idHisto = {2016: ["NUM_MediumID_DEN_genTracks_eta_pt", "NUM_MediumID_DEN_genTracks_eta_pt_stat", "NUM_M\
+ediumID_DEN_genTracks_eta_pt_syst"], 
+           2017: ["NUM_MediumID_DEN_genTracks_pt_abseta", "NUM_MediumID_DEN_genTracks_pt_abseta_stat", "NUM_MediumID_DEN_genTracks_pt_abseta_syst"],
+           2018: ["NUM_MediumID_DEN_genTracks_pt_abseta"]
+           }
+
+isoHisto = {2016: ["NUM_TightRelIso_DEN_MediumID_eta_pt", "NUM_TightRelIso_DEN_MediumID_eta_pt_stat", "NUM_TightRelIso_DEN_MediumID_eta_pt_syst"],
+            2017: ["NUM_TightRelIso_DEN_MediumID_pt_abseta", "NUM_TightRelIso_DEN_MediumID_pt_abseta_stat", "NUM_TightRelIso_DEN_MediumID_pt_abseta_syst"],
+            2018: ["NUM_TightRelIso_DEN_MediumID_pt_abseta"]
+            }
+##This is required beacuse for 2016 ID SF, binning is done for eta;x-axis is eta
+##But in any case, maybe useful if POG decides to switch from abs(eta) to eta
+##Not used for Trigger
+useAbsEta = { 2016 : False, 2017 : True, 2018 : True}
+ptEtaAxis = { 2016 : False, 2017 : True, 2018 : True}
+lepSFTrig = lambda : lepSFProducerV2(lepFlavour="Muon", cut = "Trigger", histos=triggerHisto[dataYear], dataYear=str(dataYear), runPeriod=runPeriod)
+lepSFID   = lambda : lepSFProducerV2(lepFlavour="Muon", cut = "ID", histos=idHisto[dataYear], dataYear=str(dataYear), runPeriod=runPeriod, useAbseta=useAbsEta[dataYear], ptEtaAxis=ptEtaAxis[dataYear])
+lepSFISO  = lambda : lepSFProducerV2(lepFlavour="Muon", cut = "ISO", histos=isoHisto[dataYear], dataYear=str(dataYear), runPeriod=runPeriod, useAbseta=useAbsEta[dataYear], ptEtaAxis=ptEtaAxis[dataYear])
+
 ################################################ GEN
 
 Wtypes = ['bare', 'preFSR', 'dress']
@@ -207,7 +231,9 @@ if isMC:
     if not genOnly:
         modules = [puWeightProducer(), 
                    preSelection(isMC=isMC, passall=passall, dataYear=dataYear), 
-                   lepSF(),
+	           lepSFTrig(),
+                   lepSFID(),
+                   lepSFISO(),
                    jmeCorrections(),
                    recoZproducer(mudict=mudict, isMC=isMC),
                    additionalVariables(isMC=isMC, mudict=mudict, metdict=metdict), 
@@ -217,8 +243,8 @@ if isMC:
                    harmonicWeights(Wtypes=Wtypes),
                    ]
         if muonScaleRes!=None: modules.insert(3, muonScaleRes())
-    else: modules = [genLeptonSelection(Wtypes=Wtypes),CSVariables(Wtypes=Wtypes),genVproducer(Wtypes=Wtypes)]
-        
+        else: modules = [genLeptonSelection(Wtypes=Wtypes),CSVariables(Wtypes=Wtypes),genVproducer(Wtypes=Wtypes)]
+
 else:
     input_files.append( input_dir+ifileDATA )
     modules = [preSelection(isMC=isMC, passall=passall, dataYear=dataYear), 
