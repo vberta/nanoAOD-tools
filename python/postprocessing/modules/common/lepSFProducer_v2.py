@@ -31,7 +31,7 @@ class lepSFProducerV2(Module):
         print self.histos
 
     def beginJob(self):
-        print self.branchName
+        #print self.branchName
         self._worker_lep_SF = ROOT.WeightCalculatorFromHistogram(self.loadHisto(self.effFile, self.histos[0]))
         if len(self.histos) > 1:
             self._worker_lep_SFstat = ROOT.WeightCalculatorFromHistogram(self.loadHisto(self.effFile, self.histos[1]))
@@ -50,10 +50,10 @@ class lepSFProducerV2(Module):
         pass
 
     def loadHisto(self,filename,hname):
-        print "Trying to read ",hname, " from file:", filename
+        #print "Trying to read ",hname, " from file:", filename
         tf = ROOT.TFile.Open(filename)
         hist = tf.Get(hname)
-        print hist.GetName()
+        #print hist.GetName()
         hist.SetDirectory(0)
         tf.Close()
         return hist
