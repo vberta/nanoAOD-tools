@@ -71,6 +71,7 @@ config.Data.publication = False
 config.Data.outputDatasetTag = 'TEST'
 config.section_("Site")
 config.Site.storageSite = "T2_IT_Pisa"
+#config.Site.storageSite = "T2_IT_Bari"
 
 if __name__ == '__main__':
 
