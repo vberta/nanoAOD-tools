@@ -8,10 +8,10 @@ from PhysicsTools.NanoAODTools.postprocessing.framework.datamodel import Collect
 from PhysicsTools.NanoAODTools.postprocessing.framework.eventloop import Module
 
 #global definition of CS angles
-def azimuth(phi):
-    if phi<0.0:
-        phi += 2*math.pi
-    return phi
+#def azimuth(phi):
+#    if phi<0.0:
+#        phi += 2*math.pi
+#    return phi
 
 def getCSangles(muon,neutrino):
 
@@ -47,7 +47,8 @@ def getCSangles(muon,neutrino):
     flip_z = -1 if Wp4.Rapidity()<0.0 else +1
 
     # compute PS point
-    return [Lp4_rot.CosTheta()*flip_z, azimuth(Lp4_rot.Phi()*flip_z)]
+    #print 'flip', flip_z, ': ', azimuth(Lp4_rot.Phi()*flip_z), ' --- ', math.atan2(Lp4_rot.Py()*flip_z,Lp4_rot.Px()*flip_z)
+    return [Lp4_rot.CosTheta()*flip_z, math.atan2(Lp4_rot.Py()*flip_z, Lp4_rot.Px()*flip_z)]
 
 
 class CSVariables(Module):
