@@ -73,7 +73,7 @@ if crab:
 # JEC for MET
 jecTagsMC = {'2016' : 'Summer16_07Aug2017_V11_MC', 
              '2017' : 'Fall17_17Nov2017_V32_MC', 
-             '2018' : 'Autumn18_V3_MC'}
+             '2018' : 'Autumn18_V8_MC'}
 
 jecTagsDATA = { '2016B' : 'Summer16_07Aug2017BCD_V11_DATA', 
                 '2016C' : 'Summer16_07Aug2017BCD_V11_DATA', 
@@ -88,10 +88,10 @@ jecTagsDATA = { '2016B' : 'Summer16_07Aug2017BCD_V11_DATA',
                 '2017D' : 'Fall17_17Nov2017DE_V32_DATA', 
                 '2017E' : 'Fall17_17Nov2017DE_V32_DATA', 
                 '2017F' : 'Fall17_17Nov2017F_V32_DATA', 
-                '2018A' : '',
-                '2018B' : '',
-                '2018C' : '',
-                '2018D' : '',
+                '2018A' : 'Autumn18_RunA_V8_DATA',
+                '2018B' : 'Autumn18_RunB_V8_DATA',
+                '2018C' : 'Autumn18_RunC_V8_DATA',
+                '2018D' : 'Autumn18_RunD_V8_DATA',
                 }   
 
 jecTag = jecTagsMC[str(dataYear)] if isMC else jecTagsDATA[str(dataYear) + runPeriod]
