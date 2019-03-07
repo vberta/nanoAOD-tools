@@ -22,6 +22,7 @@ parser.add_argument('-redojec', '--redojec',  type=int, default=0,      help="")
 parser.add_argument('-runPeriod', '--runPeriod',  type=str, default="B", help="")
 parser.add_argument('-genOnly',    '--genOnly',type=int, default=0,    help="")
 parser.add_argument('-run', '--run', type=str, default="submit", help="")
+parser.add_argument('-dbs', '--dbs', type=str, default="global", help="")
 args = parser.parse_args()
 tag = args.tag
 isMC = args.isMC
@@ -31,6 +32,7 @@ redojec = args.redojec
 runPeriod = args.runPeriod
 genOnly   = args.genOnly
 run = args.run
+dbs = args.dbs
 samples = ('mc' if isMC else 'data')+'samples_'+str(dataYear)+'.txt'
 print "tag =", bcolors.OKGREEN, tag, bcolors.ENDC, \
     ", isMC =", bcolors.OKGREEN, str(isMC), bcolors.ENDC, \
@@ -52,7 +54,7 @@ config.JobType.scriptArgs = ['crab=1', 'isMC='+('1' if isMC else '0'), 'dataYear
 config.JobType.sendPythonFolder	 = True
 config.section_("Data")
 config.Data.inputDataset = 'TEST'
-config.Data.inputDBS = 'global'
+config.Data.inputDBS = dbs
 config.Data.splitting = 'FileBased'
 config.Data.unitsPerJob = 5
 #config.Data.totalUnits = 10
@@ -100,6 +102,7 @@ if __name__ == '__main__':
     n = 0
     for dataset in content :        
         if dataset[0]=='#':
+            n += 1
             continue
         dataset_inputDataset = dataset.split(',')[0]
         dataset_unitsPerJob = int(dataset.split(',')[1])
