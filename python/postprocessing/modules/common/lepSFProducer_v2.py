@@ -24,14 +24,20 @@ class lepSFProducerV2(Module):
         effFile += (cut + ".root")
 
         self.effFile = "%s/src/PhysicsTools/NanoAODTools/python/postprocessing/data/leptonSF/Muon/year%s/%s" % (os.environ['CMSSW_BASE'],dataYear, effFile)
-        if "/LeptonEfficiencyCorrector_cc.so" not in ROOT.gSystem.GetLibraries():
-            print "Loading C++ helper from %s/src/PhysicsTools/NanoAODTools/src/WeightCalculatorFromHistogram.cc" % os.environ['CMSSW_BASE']
-            ROOT.gROOT.ProcessLine(".L %s/src/PhysicsTools/NanoAODTools/src/WeightCalculatorFromHistogram.cc" % os.environ['CMSSW_BASE'])
-        print "Will Read scale factors for " + cut + " from " + self.effFile
-        print self.histos
+        try:
+            ROOT.gSystem.Load("libPhysicsToolsNanoAODTools")
+            dummy = ROOT.WeightCalculatorFromHistogram
+        except Exception as e:
+            print "Could not load module via python, trying via ROOT", e
+            if "/WeightCalculatorFromHistogram_cc.so" not in ROOT.gSystem.GetLibraries():
+                print "Loading C++ helper from %s/src/PhysicsTools/NanoAODTools/src/WeightCalculatorFromHistogram.cc" % os.environ['CMSSW_BASE']
+                ROOT.gROOT.ProcessLine(".L %s/src/PhysicsTools/NanoAODTools/src/WeightCalculatorFromHistogram.cc++" % os.environ['CMSSW_BASE'])
+            dummy = ROOT.WeightCalculatorFromHistogram
+        #print "Will Read scale factors for " + cut + " from " + self.effFile
+        #print self.histos
 
     def beginJob(self):
-        print self.branchName
+        #print self.branchName
         self._worker_lep_SF = ROOT.WeightCalculatorFromHistogram(self.loadHisto(self.effFile, self.histos[0]))
         if len(self.histos) > 1:
             self._worker_lep_SFstat = ROOT.WeightCalculatorFromHistogram(self.loadHisto(self.effFile, self.histos[1]))
@@ -50,10 +56,10 @@ class lepSFProducerV2(Module):
         pass
 
     def loadHisto(self,filename,hname):
-        print "Trying to read ",hname, " from file:", filename
+        #print "Trying to read ",hname, " from file:", filename
         tf = ROOT.TFile.Open(filename)
         hist = tf.Get(hname)
-        print hist.GetName()
+        #print hist.GetName()
         hist.SetDirectory(0)
         tf.Close()
         return hist

@@ -177,8 +177,7 @@ triggerHisto = {2016:['IsoMu24_OR_IsoTkMu24_PtEtaBins/pt_abseta_ratio', 'IsoMu24
                 2017:['IsoMu27_PtEtaBins/pt_abseta_ratio', 'IsoMu27_PtEtaBins/pt_abseta_ratio'], 
                 2018:['IsoMu24_PtEtaBins/pt_abseta_ratio', 'IsoMu24_PtEtaBins/pt_abseta_ratio']
                 }
-idHisto = {2016: ["NUM_MediumID_DEN_genTracks_eta_pt", "NUM_MediumID_DEN_genTracks_eta_pt_stat", "NUM_M\
-ediumID_DEN_genTracks_eta_pt_syst"], 
+idHisto = {2016: ["NUM_MediumID_DEN_genTracks_eta_pt", "NUM_MediumID_DEN_genTracks_eta_pt_stat", "NUM_MediumID_DEN_genTracks_eta_pt_syst"], 
            2017: ["NUM_MediumID_DEN_genTracks_pt_abseta", "NUM_MediumID_DEN_genTracks_pt_abseta_stat", "NUM_MediumID_DEN_genTracks_pt_abseta_syst"],
            2018: ["NUM_MediumID_DEN_genTracks_pt_abseta"]
            }
@@ -240,10 +239,12 @@ if isMC:
                    genLeptonSelection(Wtypes=Wtypes), 
                    CSVariables(Wtypes=Wtypes), 
                    genVproducer(Wtypes=Wtypes),
-                   harmonicWeights(Wtypes=Wtypes),
+                   #harmonicWeights(Wtypes=Wtypes),
                    ]
-        if muonScaleRes!=None: modules.insert(3, muonScaleRes())
-        else: modules = [genLeptonSelection(Wtypes=Wtypes),CSVariables(Wtypes=Wtypes),genVproducer(Wtypes=Wtypes)]
+        # add before recoZproducer
+        if muonScaleRes!=None: modules.insert(5, muonScaleRes())
+    else: 
+        modules = [genLeptonSelection(Wtypes=Wtypes),CSVariables(Wtypes=Wtypes),genVproducer(Wtypes=Wtypes)]
 
 else:
     input_files.append( input_dir+ifileDATA )
@@ -251,8 +252,10 @@ else:
                recoZproducer(mudict=mudict, isMC=isMC),
                additionalVariables(isMC=isMC, mudict=mudict, metdict=metdict),
                ]
+    # add before recoZproducer
     if jmeCorrections!=None: modules.insert(1,jmeCorrections())
-    if muonScaleRes!=None: modules.insert(1, muonScaleRes())
+    # add before recoZproducer
+    if muonScaleRes!=None:   modules.insert(1, muonScaleRes())
 
 treecut = ("Entry$<" + str(maxEvents) if maxEvents > 0 else None)
 kd_file = "keep_and_drop"
