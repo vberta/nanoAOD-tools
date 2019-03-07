@@ -10,6 +10,7 @@ import sys
 import argparse
 
 from CRABClient.UserUtilities import config, getUsernameFromSiteDB
+from CRABAPI.RawCommand import crabCommand
 
 class bcolors:
     HEADER = '\033[95m'
@@ -42,7 +43,8 @@ samples = ('mc' if isMC else 'data')+'samples_'+str(dataYear)+'.txt'
 import subprocess
 
 select_first_trial = True
-n_max_files = 99
+n_max_files = 999
+use_crab_dir = True
 
 # needed for CRAB utilities and lcg tools
 os.system('voms-proxy-init --voms cms')
@@ -65,18 +67,25 @@ if pushback:
 else:
     print "Hadding to scratch area:", bcolors.OKGREEN, outdir_master,  bcolors.ENDC
 
+fres = open('postcrab_'+samples.rstrip('.txt')+'_'+tag+'_result.txt', 'a')
 fin = open('postcrab_'+samples.rstrip('.txt')+'_'+tag+'.txt', 'r')
 content = fin.readlines()
 sample_dirs = [x.strip() for x in content]
 for sample_dir in sample_dirs:    
+    if sample_dir[0]=='#':
+        continue
     task_name = sample_dir.split('/')[-2]
     sample_name = sample_dir.split('/')[-4]
     ext = ''
-    idx_ext = sample_dir.split('/')[-3].find('ext')    
-    if idx_ext!=-1:
-        ext = '_'+sample_dir.split('/')[-3][idx_ext:idx_ext+4]
+    if isMC:
+        idx_ext = sample_dir.split('/')[-3].find('ext')    
+        if idx_ext!=-1:
+            ext = '_'+sample_dir.split('/')[-3][idx_ext:idx_ext+4]
+        else:
+            print " => no extensions found in sample %s" % sample_dir.split('/')[-3]
     else:
-        print " => no extensions found in sample %s" % sample_dir.split('/')[-3]
+        idx_ext = sample_dir.split('/')[-3].find('Nano')
+        ext = '_'+(sample_dir.split('/')[-3][0:idx_ext-1])
     job_name = task_name.replace('_', '')
     script_name = 'hn_'+task_name
     fout = open(script_name+'.sh','w')
@@ -118,15 +127,40 @@ for sample_dir in sample_dirs:
             if 'tree_' not in lres: continue
             files.append('root://xrootd-cms.infn.it/'+lres)
     else:
-        crab_trials = os.listdir(sample_dir)
-        for crab_trial in crab_trials:
-            if select_first_trial and crab_trial!="0000":
-                continue
+        if not os.path.isdir(sample_dir):
+            files = []
+            print 'Directory NOT found!'
+        else:
+            crab_trials = os.listdir(sample_dir)
+            for crab_trial in crab_trials:
+                if select_first_trial and crab_trial!="0000":
+                    continue
             files = [sample_dir+"/"+crab_trial+"/"+x for x in os.listdir(sample_dir+'/'+crab_trial) if "tree_" in x]
 
-    nfiles = len(files)
+    nfiles, nfinish, nall = len(files), 0, 0
+    if use_crab_dir:
+        for d in os.listdir('./'):
+            if 'crab_' in d and '_task_' in d:
+                crablog = open(d+'/crab.log')
+                crabloglines = [x.strip() for x in crablog]
+                for crablogline in crabloglines:
+                    if task_name in crablogline:
+                        print 'Task name matches CRAB directory', bcolors.OKBLUE, d, bcolors.ENDC
+                        res = crabCommand('status', dir=d)
+                        nall = len(res['jobList']) 
+                        for r in res['jobList']:
+                            if r[0]=='finished': nfinish += 1
+                        break
+    print "All tasks:     ", bcolors.OKGREEN,  "%s" % nall, bcolors.ENDC 
+    print "Finished tasks:", bcolors.OKGREEN,  "%s" % nfinish, bcolors.ENDC 
+    print "Found in dir:  ", bcolors.OKGREEN,  "%s" % nfiles, bcolors.ENDC
+    print ' => fraction of hadded files:', "(%s)/(%s) = " % (nfiles,nall), bcolors.OKBLUE, "%s" % (float(nfiles)/nall if nall>0 else -1), bcolors.ENDC
+    fres.write("%s, %s, %s/%s\n" % (task_name, sample_name+ext, nfiles, nall) )
+
+    if nfiles==0:
+        continue
+
     haddargs = outdir+"tree.root "
-    print " => found", bcolors.OKGREEN, "%s" % nfiles, bcolors.ENDC, "files"
     for nf,f in enumerate(files):
         if nf<n_max_files:
             haddargs += f+" "
@@ -170,3 +204,6 @@ for sample_dir in sample_dirs:
         os.system(submit_to_queue)
         time.sleep( 1.0 )
         print "@@@@@ END JOB @@@@@"        
+
+fin.close()
+fres.close()
