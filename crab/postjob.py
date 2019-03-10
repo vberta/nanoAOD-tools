@@ -78,11 +78,15 @@ for sample_dir in sample_dirs:
     sample_name = sample_dir.split('/')[-4]
     ext = ''
     if isMC:
-        idx_ext = sample_dir.split('/')[-3].find('ext')    
+        prod_tag = sample_dir.split('/')[-3]
+        idx_ext = prod_tag.find('ext')    
         if idx_ext!=-1:
-            ext = '_'+sample_dir.split('/')[-3][idx_ext:idx_ext+4]
+            ext = '_'+prod_tag[idx_ext:idx_ext+4]
         else:
             print " => no extensions found in sample %s" % sample_dir.split('/')[-3]
+        if 'NanoWMass' in prod_tag:
+            ext = '_'+task_name
+            print " => sample will be added label '%s'" % task_name
     else:
         idx_ext = sample_dir.split('/')[-3].find('Nano')
         ext = '_'+(sample_dir.split('/')[-3][0:idx_ext-1])
