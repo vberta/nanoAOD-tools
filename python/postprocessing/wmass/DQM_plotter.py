@@ -34,8 +34,7 @@ canvaslist = {}
 histolist = {}
 output = TFile(outputFile,"recreate")
 
-# os.mkdir('./systematics')
-
+os.mkdir('./systematics')
 
 #dimuon????? check!
 for key_part, part in variables.items() :
@@ -92,7 +91,7 @@ for key_part, part in variables.items() :
             histolist[hName].SetBinContent(1,histolist[hName].GetBinContent(1)+histolist[hName].GetBinContent(0)) #underflow in first bin
             histolist[hName].Sumw2()
 
-        def RatioPlot(name_num, name_den,range_min,range_max) :
+        def RatioPlot(name_num, name_den,range_min,range_max,logFlag) :
 
                     #ratio between histograms
 
@@ -103,8 +102,10 @@ for key_part, part in variables.items() :
                     histolist[hName].SetLineWidth(2)
 
                     canvaslist['c_'+key_part+'_'+ hName].cd()
-                    histolist[hName].Draw()
                     canvaslist['c_'+key_part+'_'+ hName].SetGrid()
+                    if(logFlag) :
+                        canvaslist['c_'+key_part+'_'+ hName].SetLogy()
+                    histolist[hName].Draw()
 
                     legSample = TLegend(0.1,0.95,0.7,0.9)
                     legSample.SetHeader(dataset)
@@ -150,27 +151,27 @@ for key_part, part in variables.items() :
 
 
 
-        RatioPlot('Muon_pt_corrected','Muon_pt_pf',0.98,1.02)
-        RatioPlot('Muon_pt_correctedUp','Muon_pt_corrected',0.98,1.02)
-        RatioPlot('Muon_pt_correctedDown','Muon_pt_corrected',0.98,1.02)
-        RatioPlot('MET_pt_nom','MET_pt_pf',0.5,1.5)
-        RatioPlot('MET_pt_jerUp','MET_pt_nom',0.5,1.5)
-        RatioPlot('MET_pt_jerDown','MET_pt_nom',0.5,1.5)
-        RatioPlot('MET_pt_jesTotalUp','MET_pt_nom',0.5,1.5)
-        RatioPlot('MET_pt_jesTotalDown','MET_pt_nom',0.5,1.5)
-        RatioPlot('MET_pt_unclustEnUp','MET_pt_nom',0.5,1.5)
-        RatioPlot('MET_pt_unclustEnDown','MET_pt_nom',0.5,1.5)
+        RatioPlot('Muon_pt_corrected','Muon_pt_pf',0.98,1.02,False)
+        RatioPlot('Muon_pt_correctedUp','Muon_pt_corrected',0.98,1.02,False)
+        RatioPlot('Muon_pt_correctedDown','Muon_pt_corrected',0.98,1.02,False)
+        RatioPlot('MET_pt_nom','MET_pt_pf',0.5,1.5,False)
+        RatioPlot('MET_pt_jerUp','MET_pt_nom',0.5,1.5,False)
+        RatioPlot('MET_pt_jerDown','MET_pt_nom',0.5,1.5,False)
+        RatioPlot('MET_pt_jesTotalUp','MET_pt_nom',0.5,1.5,False)
+        RatioPlot('MET_pt_jesTotalDown','MET_pt_nom',0.5,1.5,False)
+        RatioPlot('MET_pt_unclustEnUp','MET_pt_nom',0.5,1.5,False)
+        RatioPlot('MET_pt_unclustEnDown','MET_pt_nom',0.5,1.5,False)
 
-        RatioPlot('GenV_preFSR_mass','GenV_bare_mass',0.9995,1.0005)
-        RatioPlot('GenV_preFSR_y','GenV_bare_y',0.9995,1.0005)
-        RatioPlot('GenV_preFSR_qt','GenV_bare_qt',0.9995,1.0005)
-        RatioPlot('GenV_preFSR_CStheta','GenV_bare_CStheta',0.9995,1.0005)
-        RatioPlot('GenV_preFSR_CSphi','GenV_bare_CSphi',0.9995,1.0005)
-        RatioPlot('GenV_dress_mass','GenV_bare_mass',0.9995,1.0005)
-        RatioPlot('GenV_dress_y','GenV_bare_y',0.9995,1.0005)
-        RatioPlot('GenV_dress_qt','GenV_bare_qt',0.9995,1.0005)
-        RatioPlot('GenV_dress_CStheta','GenV_bare_CStheta',0.9995,1.0005)
-        RatioPlot('GenV_dress_CSphi','GenV_bare_CSphi',0.9995,1.0005)
+        RatioPlot('GenV_preFSR_mass','GenV_bare_mass',0.99,1.01, True)
+        RatioPlot('GenV_preFSR_y','GenV_bare_y',0.99,1.01, True)
+        RatioPlot('GenV_preFSR_qt','GenV_bare_qt',0.99,1.01, True)
+        RatioPlot('GenV_preFSR_CStheta','GenV_bare_CStheta',0.99,1.01, True)
+        RatioPlot('GenV_preFSR_CSphi','GenV_bare_CSphi',0.99,1.01, True)
+        RatioPlot('GenV_dress_mass','GenV_bare_mass',0.99,1.01, True)
+        RatioPlot('GenV_dress_y','GenV_bare_y',0.99,1.01, True)
+        RatioPlot('GenV_dress_qt','GenV_bare_qt',0.99,1.01, True)
+        RatioPlot('GenV_dress_CStheta','GenV_bare_CStheta',0.99,1.01, True)
+        RatioPlot('GenV_dress_CSphi','GenV_bare_CSphi',0.99,1.01, True)
 
 
 if(refFile!='') :
@@ -239,7 +240,7 @@ if(refFile!='') :
                 histolist[hName].Sumw2()
                 histolist[hName].Scale(histolist[hName_main].GetEntries()/histolist[hName].GetEntries())
 
-            def RatioPlot_ref(name_num, name_den,range_min,range_max) :
+            def RatioPlot_ref(name_num, name_den,range_min,range_max, logFlag) :
 
 
                         #ratio between histograms
@@ -252,6 +253,8 @@ if(refFile!='') :
                         histolist[hName].SetLineColor(2)
 
                         canvaslist['c_'+key_part+'_'+ hName_main].cd()
+                        if(logFlag) :
+                            canvaslist['c_'+key_part+'_'+ hName_main].SetLogy()
                         histolist[hName].Draw("SAME")
 
                         legComp = TLegend(0.7,0.65,0.98,0.45)
@@ -295,24 +298,24 @@ if(refFile!='') :
                         histolist[hName].Write()
 
 
-            RatioPlot_ref('Muon_pt_corrected','Muon_pt_pf',0.98,1.02)
-            RatioPlot_ref('Muon_pt_correctedUp','Muon_pt_corrected',0.98,1.02)
-            RatioPlot_ref('Muon_pt_correctedDown','Muon_pt_corrected',0.98,1.02)
-            RatioPlot_ref('MET_pt_nom','MET_pt_pf',0.5,1.5)
-            RatioPlot_ref('MET_pt_jerUp','MET_pt_nom',0.5,1.5)
-            RatioPlot_ref('MET_pt_jerDown','MET_pt_nom',0.5,1.5)
-            RatioPlot_ref('MET_pt_jesTotalUp','MET_pt_nom',0.5,1.5)
-            RatioPlot_ref('MET_pt_jesTotalDown','MET_pt_nom',0.5,1.5)
-            RatioPlot_ref('MET_pt_unclustEnUp','MET_pt_nom',0.5,1.5)
-            RatioPlot_ref('MET_pt_unclustEnDown','MET_pt_nom',0.5,1.5)
+            RatioPlot_ref('Muon_pt_corrected','Muon_pt_pf',0.98,1.02,False)
+            RatioPlot_ref('Muon_pt_correctedUp','Muon_pt_corrected',0.98,1.02,False)
+            RatioPlot_ref('Muon_pt_correctedDown','Muon_pt_corrected',0.98,1.02,False)
+            RatioPlot_ref('MET_pt_nom','MET_pt_pf',0.5,1.5,False)
+            RatioPlot_ref('MET_pt_jerUp','MET_pt_nom',0.5,1.5,False)
+            RatioPlot_ref('MET_pt_jerDown','MET_pt_nom',0.5,1.5,False)
+            RatioPlot_ref('MET_pt_jesTotalUp','MET_pt_nom',0.5,1.5,False)
+            RatioPlot_ref('MET_pt_jesTotalDown','MET_pt_nom',0.5,1.5,False)
+            RatioPlot_ref('MET_pt_unclustEnUp','MET_pt_nom',0.5,1.5,False)
+            RatioPlot_ref('MET_pt_unclustEnDown','MET_pt_nom',0.5,1.5,False)
 
-            RatioPlot_ref('GenV_preFSR_mass','GenV_bare_mass',0.9995,1.0005)
-            RatioPlot_ref('GenV_preFSR_y','GenV_bare_y',0.9995,1.0005)
-            RatioPlot_ref('GenV_preFSR_qt','GenV_bare_qt',0.9995,1.0005)
-            RatioPlot_ref('GenV_preFSR_CStheta','GenV_bare_CStheta',0.9995,1.0005)
-            RatioPlot_ref('GenV_preFSR_CSphi','GenV_bare_CSphi',0.9995,1.0005)
-            RatioPlot_ref('GenV_dress_mass','GenV_bare_mass',0.9995,1.0005)
-            RatioPlot_ref('GenV_dress_y','GenV_bare_y',0.9995,1.0005)
-            RatioPlot_ref('GenV_dress_qt','GenV_bare_qt',0.9995,1.0005)
-            RatioPlot_ref('GenV_dress_CStheta','GenV_bare_CStheta',0.9995,1.0005)
-            RatioPlot_ref('GenV_dress_CSphi','GenV_bare_CSphi',0.9995,1.0005)
+            RatioPlot_ref('GenV_preFSR_mass','GenV_bare_mass',0.99,1.01,True)
+            RatioPlot_ref('GenV_preFSR_y','GenV_bare_y',0.99,1.01,True)
+            RatioPlot_ref('GenV_preFSR_qt','GenV_bare_qt',0.99,1.01,True)
+            RatioPlot_ref('GenV_preFSR_CStheta','GenV_bare_CStheta',0.99,1.01,True)
+            RatioPlot_ref('GenV_preFSR_CSphi','GenV_bare_CSphi',0.99,1.01,True)
+            RatioPlot_ref('GenV_dress_mass','GenV_bare_mass',0.99,1.01,True)
+            RatioPlot_ref('GenV_dress_y','GenV_bare_y',0.99,1.01,True)
+            RatioPlot_ref('GenV_dress_qt','GenV_bare_qt',0.99,1.01,True)
+            RatioPlot_ref('GenV_dress_CStheta','GenV_bare_CStheta',0.99,1.01,True)
+            RatioPlot_ref('GenV_dress_CSphi','GenV_bare_CSphi',0.99,1.01,True)
