@@ -244,7 +244,7 @@ if isMC:
         # add before recoZproducer
         if muonScaleRes!=None: modules.insert(5, muonScaleRes())
     else: 
-        modules = [genLeptonSelection(Wtypes=Wtypes),CSVariables(Wtypes=Wtypes),genVproducer(Wtypes=Wtypes)]
+        modules = [genLeptonSelection(Wtypes=Wtypes, filterByDecay=True),CSVariables(Wtypes=Wtypes),genVproducer(Wtypes=Wtypes)]
 
 else:
     input_files.append( input_dir+ifileDATA )
