@@ -6,23 +6,23 @@ ROOT.PyConfig.IgnoreCommandLineOptions = True
 from PhysicsTools.NanoAODTools.postprocessing.framework.datamodel import Collection
 from PhysicsTools.NanoAODTools.postprocessing.framework.eventloop import Module
 
-muFileDict={ '2016' : ['RunBCDEF_SF_', 'RunGH_SF_'],
-             '2017' : ['RunBCDEF_SF_'],
-             '2018' : ['RunABCD_SF_']
-           }
+#muFileDict={ '2016' : ['RunBCDEF_SF_', 'RunGH_SF_'],
+#             '2017' : ['RunBCDEF_SF_'],
+#             '2018' : ['RunABCD_SF_']
+#           }
 
 class lepSFProducerV2(Module):
     def __init__(self, lepFlavour="Muon", cut= "Trigger", histos=["IsoMu24_OR_IsoTkMu24_PtEtaBins/pt_abseta_ratio"], useAbseta=True, ptEtaAxis=True,dataYear="2016", runPeriod="B"):
         self.lepFlavour = lepFlavour
         self.histos = [h for h in histos]
-        self.branchName = self.lepFlavour + "_" + cut
+        self.branchName = self.lepFlavour + "_" + cut + "_" + runPeriod
         self.useAbseta = useAbseta
         self.ptEtaAxis = ptEtaAxis
-        for p in muFileDict[dataYear]:
-            if runPeriod in p:
-                effFile = p
-        effFile += (cut + ".root")
-
+        #for p in muFileDict[dataYear]:
+        #    if runPeriod in p:
+        #        effFile = p
+        #effFile += (cut + ".root")
+        effFile = "Run" + runPeriod + "_SF_" + cut + ".root"
         self.effFile = "%s/src/PhysicsTools/NanoAODTools/python/postprocessing/data/leptonSF/Muon/year%s/%s" % (os.environ['CMSSW_BASE'],dataYear, effFile)
         try:
             ROOT.gSystem.Load("libPhysicsToolsNanoAODTools")
@@ -51,7 +51,7 @@ class lepSFProducerV2(Module):
         self.out.branch(self.branchName + "_SF", "F", lenVar="n" + self.lepFlavour)
         self.out.branch(self.branchName + "_SFstat", "F", lenVar="n" + self.lepFlavour)
         self.out.branch(self.branchName + "_SFsyst", "F", lenVar="n" + self.lepFlavour)
-        #self.out.branch("Electron_effSF", "F", lenVar="nElectron")
+    
     def endFile(self, inputFile, outputFile, inputTree, wrappedOutputTree):
         pass
 
