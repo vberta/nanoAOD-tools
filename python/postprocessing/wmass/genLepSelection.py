@@ -18,8 +18,9 @@ def find_last_beforeFSR(genParticles, idx):
     return result
 
 class genLeptonSelection(Module):
-    def __init__(self, Wtypes=['bare', 'preFSR', 'dress']):
+    def __init__(self, Wtypes=['bare', 'preFSR', 'dress'], filterByDecay=False):
         self.Wtypes = Wtypes
+        self.filterByDecay = filterByDecay
         pass
     def beginJob(self):
         pass
@@ -98,7 +99,7 @@ class genLeptonSelection(Module):
                 self.out.fillBranch("Idx_"+t+"_mu1", -1)
                 self.out.fillBranch("Idx_"+t+"_mu2", -1)
             self.out.fillBranch("Idx_nu", -1)
-            return True
+            return (True if not self.filterByDecay else False)
         
         # W->mn
         if evt_flag==14:

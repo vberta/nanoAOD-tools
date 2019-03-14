@@ -43,6 +43,7 @@ parser.add_argument('-jesUncert', '--jesUncert',type=str, default="Total",help="
 parser.add_argument('-redojec',   '--redojec',  type=int, default=0,      help="")
 parser.add_argument('-runPeriod', '--runPeriod',type=str, default="B",    help="")
 parser.add_argument('-genOnly',    '--genOnly',type=int, default=0,    help="")
+parser.add_argument('-trigOnly',    '--trigOnly',type=int, default=0,    help="")
 args = parser.parse_args()
 isMC      = args.isMC
 crab      = args.crab
@@ -53,6 +54,7 @@ runPeriod = args.runPeriod
 redojec   = args.redojec
 jesUncert = args.jesUncert
 genOnly   = args.genOnly
+trigOnly  = args.trigOnly
  
 print "isMC =", bcolors.OKGREEN, isMC, bcolors.ENDC, \
     "genOnly =", bcolors.OKGREEN, genOnly, bcolors.ENDC, \
@@ -62,7 +64,10 @@ print "isMC =", bcolors.OKGREEN, isMC, bcolors.ENDC, \
     "maxEvents =", bcolors.OKGREEN, maxEvents, bcolors.ENDC 
 
 if genOnly and not isMC:
-    print "Cannot run with genOnly option and data simultaneously"
+    print "Cannot run with --genOnly=1 option and data simultaneously"
+    exit(1)
+if trigOnly and not isMC:
+    print "Cannot run with --trigOnly=1 option and data simultaneously"
     exit(1)
 
 # run with crab
@@ -151,7 +156,7 @@ puWeightProducer = puWeight_2016
 if dataYear==2017:
     puWeightProducer = puWeight_2017
 elif dataYear==2018:
-    puWeightProducer = puWeight_2018 # FIXME
+    puWeightProducer = puWeight_2018
 
 ################################################ Muons
 #Rochester correction for muons
@@ -227,7 +232,7 @@ modules = []
 
 if isMC:
     input_files.append( input_dir+ifileMC )
-    if not genOnly:
+    if (not genOnly and not trigOnly):
         modules = [puWeightProducer(), 
                    preSelection(isMC=isMC, passall=passall, dataYear=dataYear), 
 	           lepSFTrig(),
@@ -243,9 +248,12 @@ if isMC:
                    ]
         # add before recoZproducer
         if muonScaleRes!=None: modules.insert(5, muonScaleRes())
-    else: 
-        modules = [genLeptonSelection(Wtypes=Wtypes),CSVariables(Wtypes=Wtypes),genVproducer(Wtypes=Wtypes)]
-
+    elif genOnly: 
+        modules = [genLeptonSelection(Wtypes=Wtypes, filterByDecay=True),CSVariables(Wtypes=Wtypes),genVproducer(Wtypes=Wtypes)]
+    elif trigOnly: 
+        modules = [puWeightProducer(),preSelection(isMC=True, passall=passall, dataYear=dataYear, trigOnly=True)]
+    else:
+        modules = []
 else:
     input_files.append( input_dir+ifileDATA )
     modules = [preSelection(isMC=isMC, passall=passall, dataYear=dataYear), 
@@ -262,6 +270,7 @@ kd_file = "keep_and_drop"
 if isMC:
     kd_file += "_MC"
     if genOnly: kd_file+= "GenOnly"
+    elif trigOnly: kd_file+= "TrigOnly"
 else:
     kd_file += "_Data"
 kd_file += ".txt"

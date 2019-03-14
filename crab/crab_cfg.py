@@ -21,7 +21,9 @@ parser.add_argument('-jesUncert', '--jesUncert',type=str, default="Total", help=
 parser.add_argument('-redojec', '--redojec',  type=int, default=0,      help="")
 parser.add_argument('-runPeriod', '--runPeriod',  type=str, default="B", help="")
 parser.add_argument('-genOnly',    '--genOnly',type=int, default=0,    help="")
+parser.add_argument('-trigOnly',    '--trigOnly',type=int, default=0,    help="")
 parser.add_argument('-run', '--run', type=str, default="submit", help="")
+parser.add_argument('-dbs', '--dbs', type=str, default="global", help="")
 args = parser.parse_args()
 tag = args.tag
 isMC = args.isMC
@@ -30,11 +32,14 @@ jesUncert = args.jesUncert
 redojec = args.redojec
 runPeriod = args.runPeriod
 genOnly   = args.genOnly
+trigOnly  = args.trigOnly
 run = args.run
+dbs = args.dbs
 samples = ('mc' if isMC else 'data')+'samples_'+str(dataYear)+'.txt'
 print "tag =", bcolors.OKGREEN, tag, bcolors.ENDC, \
     ", isMC =", bcolors.OKGREEN, str(isMC), bcolors.ENDC, \
     ", genOnly =", bcolors.OKGREEN, str(genOnly), bcolors.ENDC, \
+    ", trigOnly =", bcolors.OKGREEN, str(trigOnly), bcolors.ENDC, \
     ", dataYear =", bcolors.OKGREEN, str(dataYear), bcolors.ENDC, \
     " => running on sample file:", bcolors.OKGREEN, samples, bcolors.ENDC
 
@@ -47,12 +52,12 @@ config.section_("JobType")
 config.JobType.pluginName = 'Analysis'
 config.JobType.psetName = 'PSet.py'
 config.JobType.scriptExe = 'crab_script.sh'
-config.JobType.inputFiles = ['../python/postprocessing/wmass/postproc.py','../scripts/haddnano.py','../python/postprocessing/wmass/keep_and_drop_MC.txt', '../python/postprocessing/wmass/keep_and_drop_MCGenOnly.txt', '../python/postprocessing/wmass/keep_and_drop_Data.txt']
-config.JobType.scriptArgs = ['crab=1', 'isMC='+('1' if isMC else '0'), 'dataYear='+str(dataYear), 'redojec='+str(redojec), 'genOnly='+str(genOnly), 'runPeriod=B' ]
+config.JobType.inputFiles = ['../python/postprocessing/wmass/postproc.py','../scripts/haddnano.py','../python/postprocessing/wmass/keep_and_drop_MC.txt', '../python/postprocessing/wmass/keep_and_drop_MCGenOnly.txt', '../python/postprocessing/wmass/keep_and_drop_MCTrigOnly.txt','../python/postprocessing/wmass/keep_and_drop_Data.txt']
+config.JobType.scriptArgs = ['crab=1', 'isMC='+('1' if isMC else '0'), 'dataYear='+str(dataYear), 'redojec='+str(redojec), 'genOnly='+str(genOnly), 'trigOnly='+str(trigOnly), 'runPeriod=B' ]
 config.JobType.sendPythonFolder	 = True
 config.section_("Data")
 config.Data.inputDataset = 'TEST'
-config.Data.inputDBS = 'global'
+config.Data.inputDBS = dbs
 config.Data.splitting = 'FileBased'
 config.Data.unitsPerJob = 5
 #config.Data.totalUnits = 10
@@ -100,6 +105,7 @@ if __name__ == '__main__':
     n = 0
     for dataset in content :        
         if dataset[0]=='#':
+            n += 1
             continue
         dataset_inputDataset = dataset.split(',')[0]
         dataset_unitsPerJob = int(dataset.split(',')[1])
