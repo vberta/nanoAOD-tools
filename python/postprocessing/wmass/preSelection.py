@@ -21,10 +21,11 @@ def veto_electron_id(ele):
         return (ele.pt>10 and abs(ele.dxy)<0.10 and abs(ele.dz)<0.2 and ele.cutBased>=1 and ele.pfRelIso03_all< 0.30)
 
 class preSelection(Module):
-    def __init__(self, isMC=True, passall=False, dataYear=2016):
+    def __init__(self, isMC=True, passall=False, dataYear=2016, trigOnly=False):
         self.isMC = isMC
         self.passall = passall
         self.dataYear = str(dataYear)
+        self.trigOnly = trigOnly
 
         # baded on https://twiki.cern.ch/twiki/bin/view/CMS/MissingETOptionalFiltersRun2
         # val = 2*(IS FOR DATA) + 1*(IS FOR MC)
@@ -138,6 +139,12 @@ class preSelection(Module):
         self.out.fillBranch("Idx_mu2", idx2)
         self.out.fillBranch("Vtype", event_flag)
 
+        if self.trigOnly:
+            if event_flag not in [0,1] :
+                return (False or self.passall)
+            else:
+                return True
+        
         if (event_flag not in [0,1,2,3]) or not (HLT_pass24 or HLT_pass27): 
             return (False or self.passall)
 
