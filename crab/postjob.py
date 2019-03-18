@@ -50,7 +50,7 @@ import subprocess
 
 select_first_trial = True
 #n_max_files = 999
-use_crab_dir = False
+use_crab_dir = True
 
 # needed for CRAB utilities and lcg tools
 if proxy:
@@ -113,7 +113,7 @@ for sample_dir in sample_dirs:
         ext = '_'+(sample_dir.split('/')[-3][0:idx_ext-1])
     job_name = task_name.replace('_', '')
     script_name = 'hn_'+task_name
-    fout = open(script_name+'.sh','w')
+    fout = open(script_name+'_cfg.txt','w')
     fout.write('#!/bin/bash\n\n')
     fout.write('cd '+path+'\n')
     fout.write('source /cvmfs/cms.cern.ch/cmsset_default.sh\n')
@@ -193,7 +193,7 @@ for sample_dir in sample_dirs:
         if nfiles>n_max_files: postfix = '_'+str(ib)
 
         fout_b = open(script_name+postfix+'.sh','w')
-        fout =  open(script_name+'.sh', 'r')
+        fout =  open(script_name+'_cfg.txt', 'r')
         for line in fout:
             fout_b.write(line)
         fout.close()
