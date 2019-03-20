@@ -31,6 +31,7 @@ parser.add_argument('-pushback', '--pushback',type=int, default=0, help="")
 parser.add_argument('-xrootd', '--xrootd',type=int, default=0, help="")
 parser.add_argument('-srm', '--srm',type=str, default='gpfs', help="")
 parser.add_argument('-proxy', '--proxy',type=int, default=1, help="")
+parser.add_argument('-nmax', '--nmax',type=int, default=999, help="")
 args = parser.parse_args()
 tag = args.tag
 isMC = args.isMC
@@ -40,6 +41,7 @@ xrootd = args.xrootd
 pushback = args.pushback
 srm = args.srm
 proxy = args.proxy
+n_max_files = args.nmax
 samples = ('mc' if isMC else 'data')+'samples_'+str(dataYear)+'.txt'
 
 ################################################################################
@@ -47,7 +49,7 @@ samples = ('mc' if isMC else 'data')+'samples_'+str(dataYear)+'.txt'
 import subprocess
 
 select_first_trial = True
-n_max_files = 999
+#n_max_files = 999
 use_crab_dir = True
 
 # needed for CRAB utilities and lcg tools
@@ -111,7 +113,7 @@ for sample_dir in sample_dirs:
         ext = '_'+(sample_dir.split('/')[-3][0:idx_ext-1])
     job_name = task_name.replace('_', '')
     script_name = 'hn_'+task_name
-    fout = open(script_name+'.sh','w')
+    fout = open(script_name+'_cfg.txt','w')
     fout.write('#!/bin/bash\n\n')
     fout.write('cd '+path+'\n')
     fout.write('source /cvmfs/cms.cern.ch/cmsset_default.sh\n')
@@ -184,50 +186,63 @@ for sample_dir in sample_dirs:
     if nfiles==0:
         continue
 
-    haddargs = outdir+"tree.root "
-    for nf,f in enumerate(files):
-        if nf<n_max_files:
-            haddargs += f+" "
-    haddcmd = "python ../scripts/haddnano.py "+haddargs
-    print '>', bcolors.OKBLUE, haddcmd, bcolors.ENDC
-    fout.write('echo "Running hadd..."\n')
-    fout.write(haddcmd+'\n')
-    if run=='shell': 
-        os.system(haddcmd)
-        if os.path.isfile(outdir+"tree.root"): print "File", bcolors.OKBLUE, outdir+"tree.root", bcolors.ENDC, "saved."
-        else: print bcolors.FAIL, "File "+outdir+"tree.root NOT found.", bcolors.ENDC         
-    if pushback:
-        pushbackcmd = 'lcg-cp -b -U srmv2 -v file://'+outdir+'tree.root'+' \"srm://stormfe1.pi.infn.it:8444/srm/managerv2?SFN='+sample_dir_from_cms+'/tree.root'+'\"'
-        print bcolors.OKBLUE, pushbackcmd, bcolors.ENDC
-        if run=='shell':
-            if os.path.isfile(outdir+"tree.root"):
-                print "File:", bcolors.OKGREEN, outdir+"tree.root", bcolors.ENDC, "found. Move back to SRM"
-                os.system(pushbackcmd)
-                if os.path.isfile(sample_dir+"/tree.root"):
-                    print "File:", bcolors.OKGREEN, sample_dir+"/tree.root", bcolors.ENDC, "is in SRM. Remove tmp files" 
-                    rmcmd = "rm -r "+outdir
-                    print bcolors.OKBLUE, rmcmd, bcolors.ENDC
-                    os.system(rmcmd) 
-                    fout.write(rmcmd+'\n')
-                else:
-                    print "File:", bcolors.FAIL, sample_dir+"/tree.root", "NOT found.", bcolors.ENDC
-            else:
-                print "File:", bcolors.FAIL, outdir+"tree.root", bcolors.ENDC, "NOT found."                
-        elif run=='batch':
-            fout.write(pushbackcmd+'\n')
-            rmcmd = "rm -r "+outdir
-            print bcolors.OKBLUE, rmcmd, bcolors.ENDC
-            fout.write('echo "Removing tmp directory..."\n')
-            fout.write(rmcmd+'\n')
-            fout.write('echo "Done!"\n')
     fout.close()
-    if run=='batch': 
-        os.system('chmod +x '+script_name+'.sh')
-        submit_to_queue = 'bsub -q cms -J '+job_name+' -o '+path+'/'+script_name+'.stdout'+' -e '+path+'/'+script_name+'.stderr'+' -cwd `pwd` '+path+'/'+script_name+'.sh'
-        print '>', bcolors.OKBLUE, submit_to_queue, bcolors.ENDC
-        os.system(submit_to_queue)
-        time.sleep( 1.0 )
-        print "@@@@@ END JOB @@@@@"        
+    for ib in range(int(nfiles)/int(n_max_files)+1):
+
+        postfix = ''
+        if nfiles>n_max_files: postfix = '_'+str(ib)
+
+        fout_b = open(script_name+postfix+'.sh','w')
+        fout =  open(script_name+'_cfg.txt', 'r')
+        for line in fout:
+            fout_b.write(line)
+        fout.close()
+
+        haddargs = outdir+"tree"+postfix+".root "
+        for nf,f in enumerate(files):
+            if nf/n_max_files==ib:
+                haddargs += f+" "
+        haddcmd = "python ../scripts/haddnano.py "+haddargs
+
+        print '>', bcolors.OKBLUE, haddcmd, bcolors.ENDC
+        fout_b.write('echo "Running hadd..."\n')
+        fout_b.write(haddcmd+'\n')
+        if run=='shell': 
+            os.system(haddcmd)
+            if os.path.isfile(outdir+"tree"+postfix+".root"): print "File", bcolors.OKBLUE, outdir+"tree"+postfix+".root", bcolors.ENDC, "saved."
+            else: print bcolors.FAIL, "File "+outdir+"tree"+postfix+".root NOT found.", bcolors.ENDC         
+        if pushback:
+            pushbackcmd = 'lcg-cp -b -U srmv2 -v file://'+outdir+'tree'+postfix+'.root'+' \"srm://stormfe1.pi.infn.it:8444/srm/managerv2?SFN='+sample_dir_from_cms+'/tree'+postfix+'.root'+'\"'
+            print bcolors.OKBLUE, pushbackcmd, bcolors.ENDC
+            if run=='shell':
+                if os.path.isfile(outdir+"tree"+postfix+".root"):
+                    print "File:", bcolors.OKGREEN, outdir+"tree"+postfix+".root", bcolors.ENDC, "found. Move back to SRM"
+                    os.system(pushbackcmd)
+                    if os.path.isfile(sample_dir+"/tree"+postfix+".root"):
+                        print "File:", bcolors.OKGREEN, sample_dir+"/tree"+postfix+".root", bcolors.ENDC, "is in SRM. Remove tmp files" 
+                        rmcmd = "rm -r "+outdir
+                        print bcolors.OKBLUE, rmcmd, bcolors.ENDC
+                        os.system(rmcmd) 
+                        fout_b.write(rmcmd+'\n')
+                    else:
+                        print "File:", bcolors.FAIL, sample_dir+"/tree"+postfix+".root", "NOT found.", bcolors.ENDC
+                else:
+                    print "File:", bcolors.FAIL, outdir+"tree"+postfix+".root", bcolors.ENDC, "NOT found."                
+            elif run=='batch':
+                fout_b.write(pushbackcmd+'\n')
+                rmcmd = "rm -r "+outdir
+                print bcolors.OKBLUE, rmcmd, bcolors.ENDC
+                fout_b.write('echo "Removing tmp directory..."\n')
+                fout_b.write(rmcmd+'\n')
+                fout_b.write('echo "Done!"\n')
+        fout_b.close()
+        if run=='batch': 
+            os.system('chmod +x '+script_name+postfix+'.sh')
+            submit_to_queue = 'bsub -q cms -J '+job_name+postfix+' -o '+path+'/'+script_name+postfix+'.stdout'+' -e '+path+'/'+script_name+postfix+'.stderr'+' -cwd `pwd` '+path+'/'+script_name+postfix+'.sh'
+            print '>', bcolors.OKBLUE, submit_to_queue, bcolors.ENDC
+            os.system(submit_to_queue)
+            time.sleep( 1.0 )
+            print "@@@@@ END JOB @@@@@"        
 
 fin.close()
 fres.close()
