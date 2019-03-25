@@ -164,18 +164,18 @@ muonScaleRes = muonScaleRes2016
 if dataYear==2017:
     muonScaleRes = muonScaleRes2017
 elif dataYear==2018:
-    muonScaleRes = None
-    print bcolors.OKBLUE, "No module %s will be run" % "muonScaleRes", bcolors.ENDC
+    muonScaleRes = muonScaleRes2018
+    #print bcolors.OKBLUE, "No module %s will be run" % "muonScaleRes", bcolors.ENDC
     
 # muon dictionary
 mudict = { "PF" : { "tag" : "Muon", "systs" : [""] } }
 if dataYear in [2016,2017]:
-    mudict["roccor"] = { "tag" : "Muon",   "systs"  : ["corrected"] }
+    mudict["roccor"] = { "tag" : "Muon",   "systs"  : ["corrected", "correctedUp",  "correctedDown"] }
 if isMC:
     mudict["GEN"] = { "tag" : "GenMuon",  "systs" : ["bare"] }
     # these exist only for 2017
-    if dataYear==2017:
-        mudict["roccor"]["systs"] = ["corrected", "correctedUp",  "correctedDown"]    
+    #if dataYear==2017:
+    #mudict["roccor"]["systs"] = ["corrected", "correctedUp",  "correctedDown"]    
 
 ##Muon SF
 triggerHisto = {2016:['IsoMu24_OR_IsoTkMu24_PtEtaBins/pt_abseta_ratio', 'IsoMu24_OR_IsoTkMu24_PtEtaBins/pt_abseta_ratio'], 
@@ -260,11 +260,11 @@ if isMC:
                    #harmonicWeights(Wtypes=Wtypes),
                    ]
         # add before recoZproducer
+        if muonScaleRes!=None: modules.insert(5, muonScaleRes())
         if dataYear == 2016: 
             modules.insert(2,lepSFTrig_GH())
             modules.insert(3,lepSFID_GH())
             modules.insert(4,lepSFISO_GH())
-        if muonScaleRes!=None: modules.insert(5, muonScaleRes())
     elif genOnly: 
         modules = [genLeptonSelection(Wtypes=Wtypes, filterByDecay=True),CSVariables(Wtypes=Wtypes),genVproducer(Wtypes=Wtypes)]
     elif trigOnly: 
@@ -292,7 +292,6 @@ else:
     kd_file += "_Data"
 kd_file += ".txt"
 
-print modules
 p = PostProcessor(outputDir=".",  
                   inputFiles=(input_files if crab==0 else inputFiles()),
                   cut=treecut,      
