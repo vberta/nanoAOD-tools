@@ -49,8 +49,10 @@ class lepSFProducerV2(Module):
     def beginFile(self, inputFile, outputFile, inputTree, wrappedOutputTree):
         self.out = wrappedOutputTree
         self.out.branch(self.branchName + "_SF", "F", lenVar="n" + self.lepFlavour)
-        self.out.branch(self.branchName + "_SFstat", "F", lenVar="n" + self.lepFlavour)
-        self.out.branch(self.branchName + "_SFsyst", "F", lenVar="n" + self.lepFlavour)
+        self.out.branch(self.branchName + "_SFstatUp", "F", lenVar="n" + self.lepFlavour)
+        self.out.branch(self.branchName + "_SFstatDown", "F", lenVar="n" + self.lepFlavour)        
+        self.out.branch(self.branchName + "_SFsystUp", "F", lenVar="n" + self.lepFlavour)
+        self.out.branch(self.branchName + "_SFsystDown", "F", lenVar="n" + self.lepFlavour)
     
     def endFile(self, inputFile, outputFile, inputTree, wrappedOutputTree):
         pass
@@ -84,17 +86,27 @@ class lepSFProducerV2(Module):
         leptons = Collection(event, self.lepFlavour)
         sf_lep = [ self.getSF(lep.pt,lep.eta) for lep in leptons ]
         if (len(self.histos) > 2):
-            sf_lep_stat = [ self.getSFstaterr(lep.pt, lep.eta) for lep in leptons ]
-            sf_lep_syst = [ self.getSFsysterr(lep.pt, lep.eta) for lep in leptons ]
+            sf_lep_statUp   = [ (self.getSF(lep.pt,lep.eta) + self.getSFstaterr(lep.pt, lep.eta)) for lep in leptons ]
+            sf_lep_statDown = [ (self.getSF(lep.pt,lep.eta) - self.getSFstaterr(lep.pt, lep.eta)) for lep in leptons ]
+            sf_lep_systUp   = [ (self.getSF(lep.pt,lep.eta) + self.getSFsysterr(lep.pt, lep.eta)) for lep in leptons ]
+            sf_lep_systDown = [ (self.getSF(lep.pt,lep.eta) - self.getSFsysterr(lep.pt, lep.eta)) for lep in leptons ]
         elif(len(self.histos) > 1):
-            sf_lep_stat = [ self.getSFstaterr(lep.pt, lep.eta) for lep in leptons ]
+            sf_lep_statUp   = [ (self.getSF(lep.pt,lep.eta) + self.getSFstaterr(lep.pt, lep.eta)) for lep in leptons ]
+            sf_lep_statDown = [ (self.getSF(lep.pt,lep.eta) - self.getSFstaterr(lep.pt, lep.eta)) for lep in leptons ]
+            sf_lep_systUp   = [ (self.getSF(lep.pt,lep.eta) + 0.005) for lep in leptons ]
+            sf_lep_systDown = [ (self.getSF(lep.pt,lep.eta) - 0.005) for lep in leptons ]
             sf_lep_syst = [ 0.005 for lep in leptons ]
         else:
-            sf_lep_stat = [ 0.005 for lep in leptons ]
-            sf_lep_syst = [ 0.005 for lep in leptons ]
+            sf_lep_statUp   = [ (self.getSF(lep.pt,lep.eta) + 0.005) for lep in leptons ]
+            sf_lep_statDown = [ (self.getSF(lep.pt,lep.eta) - 0.005) for lep in leptons ]
+            sf_lep_systUp   = [ (self.getSF(lep.pt,lep.eta) + 0.005) for lep in leptons ]
+            sf_lep_systDown = [ (self.getSF(lep.pt,lep.eta) - 0.005) for lep in leptons ]
+
         self.out.fillBranch(self.branchName + "_SF", sf_lep)
-        self.out.fillBranch(self.branchName + "_SFstat", sf_lep_stat)
-        self.out.fillBranch(self.branchName + "_SFsyst", sf_lep_syst)
+        self.out.fillBranch(self.branchName + "_SFstatUp", sf_lep_statUp)
+        self.out.fillBranch(self.branchName + "_SFstatDown", sf_lep_statDown)
+        self.out.fillBranch(self.branchName + "_SFsystUp", sf_lep_systUp)
+        self.out.fillBranch(self.branchName + "_SFsystDown", sf_lep_systDown)
         return True
 
 # define modules using the syntax 'name = lambda : constructor' to avoid having them loaded when not needed
