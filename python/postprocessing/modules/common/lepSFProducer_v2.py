@@ -1,6 +1,7 @@
 import ROOT
 import os
 import numpy as np
+from operator import add, sub
 ROOT.PyConfig.IgnoreCommandLineOptions = True
 
 from PhysicsTools.NanoAODTools.postprocessing.framework.datamodel import Collection
@@ -18,10 +19,6 @@ class lepSFProducerV2(Module):
         self.branchName = self.lepFlavour + "_" + cut + "_" + runPeriod
         self.useAbseta = useAbseta
         self.ptEtaAxis = ptEtaAxis
-        #for p in muFileDict[dataYear]:
-        #    if runPeriod in p:
-        #        effFile = p
-        #effFile += (cut + ".root")
         effFile = "Run" + runPeriod + "_SF_" + cut + ".root"
         self.effFile = "%s/src/PhysicsTools/NanoAODTools/python/postprocessing/data/leptonSF/Muon/year%s/%s" % (os.environ['CMSSW_BASE'],dataYear, effFile)
         try:
@@ -33,11 +30,8 @@ class lepSFProducerV2(Module):
                 print "Loading C++ helper from %s/src/PhysicsTools/NanoAODTools/src/WeightCalculatorFromHistogram.cc" % os.environ['CMSSW_BASE']
                 ROOT.gROOT.ProcessLine(".L %s/src/PhysicsTools/NanoAODTools/src/WeightCalculatorFromHistogram.cc++" % os.environ['CMSSW_BASE'])
             dummy = ROOT.WeightCalculatorFromHistogram
-        #print "Will Read scale factors for " + cut + " from " + self.effFile
-        #print self.histos
 
     def beginJob(self):
-        #print self.branchName
         self._worker_lep_SF = ROOT.WeightCalculatorFromHistogram(self.loadHisto(self.effFile, self.histos[0]))
         if len(self.histos) > 1:
             self._worker_lep_SFstat = ROOT.WeightCalculatorFromHistogram(self.loadHisto(self.effFile, self.histos[1]))
@@ -49,17 +43,17 @@ class lepSFProducerV2(Module):
     def beginFile(self, inputFile, outputFile, inputTree, wrappedOutputTree):
         self.out = wrappedOutputTree
         self.out.branch(self.branchName + "_SF", "F", lenVar="n" + self.lepFlavour)
-        self.out.branch(self.branchName + "_SFstat", "F", lenVar="n" + self.lepFlavour)
-        self.out.branch(self.branchName + "_SFsyst", "F", lenVar="n" + self.lepFlavour)
+        self.out.branch(self.branchName + "_SFstatUp", "F", lenVar="n" + self.lepFlavour)
+        self.out.branch(self.branchName + "_SFstatDown", "F", lenVar="n" + self.lepFlavour)        
+        self.out.branch(self.branchName + "_SFsystUp", "F", lenVar="n" + self.lepFlavour)
+        self.out.branch(self.branchName + "_SFsystDown", "F", lenVar="n" + self.lepFlavour)
     
     def endFile(self, inputFile, outputFile, inputTree, wrappedOutputTree):
         pass
 
     def loadHisto(self,filename,hname):
-        #print "Trying to read ",hname, " from file:", filename
         tf = ROOT.TFile.Open(filename)
         hist = tf.Get(hname)
-        #print hist.GetName()
         hist.SetDirectory(0)
         tf.Close()
         return hist
@@ -92,9 +86,17 @@ class lepSFProducerV2(Module):
         else:
             sf_lep_stat = [ 0.005 for lep in leptons ]
             sf_lep_syst = [ 0.005 for lep in leptons ]
+
+        sf_lep_statUp   = list(map(add, sf_lep, sf_lep_stat)) 
+        sf_lep_statDown = list(map(sub, sf_lep, sf_lep_stat))
+        sf_lep_systUp   = list(map(sub, sf_lep, sf_lep_syst))
+        sf_lep_systDown = list(map(sub, sf_lep, sf_lep_syst))
+
         self.out.fillBranch(self.branchName + "_SF", sf_lep)
-        self.out.fillBranch(self.branchName + "_SFstat", sf_lep_stat)
-        self.out.fillBranch(self.branchName + "_SFsyst", sf_lep_syst)
+        self.out.fillBranch(self.branchName + "_SFstatUp", sf_lep_statUp)
+        self.out.fillBranch(self.branchName + "_SFstatDown", sf_lep_statDown)
+        self.out.fillBranch(self.branchName + "_SFsystUp", sf_lep_systUp)
+        self.out.fillBranch(self.branchName + "_SFsystDown", sf_lep_systDown)
         return True
 
 # define modules using the syntax 'name = lambda : constructor' to avoid having them loaded when not needed

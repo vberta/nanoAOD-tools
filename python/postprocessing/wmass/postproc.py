@@ -169,7 +169,7 @@ elif dataYear==2018:
     
 # muon dictionary
 mudict = { "PF" : { "tag" : "Muon", "systs" : [""] } }
-if dataYear in [2016,2017]:
+if dataYear in [2016, 2017, 2018]:
     mudict["roccor"] = { "tag" : "Muon",   "systs"  : ["corrected", "correctedUp",  "correctedDown"] }
 if isMC:
     mudict["GEN"] = { "tag" : "GenMuon",  "systs" : ["bare"] }
