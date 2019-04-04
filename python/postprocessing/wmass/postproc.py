@@ -11,6 +11,7 @@ from PhysicsTools.NanoAODTools.postprocessing.framework.postprocessor import Pos
 from PhysicsTools.NanoAODTools.postprocessing.modules.common.puWeightProducer import *
 from PhysicsTools.NanoAODTools.postprocessing.modules.jme.jetmetUncertainties import *
 from PhysicsTools.NanoAODTools.postprocessing.modules.jme.jetRecalib import *
+from PhysicsTools.NanoAODTools.postprocessing.modules.jme.jetmetHelperRun2 import *
 from PhysicsTools.NanoAODTools.postprocessing.modules.common.muonScaleResProducer import *
 from PhysicsTools.NanoAODTools.postprocessing.modules.common.lepSFProducer_v2 import *
 
@@ -75,6 +76,7 @@ if crab:
     from PhysicsTools.NanoAODTools.postprocessing.framework.crabhelper import inputFiles,runsAndLumis
 
 ################################################ JEC
+"""
 # JEC for MET
 jecTagsMC = {'2016' : 'Summer16_07Aug2017_V11_MC', 
              '2017' : 'Fall17_17Nov2017_V32_MC', 
@@ -126,7 +128,10 @@ else:
     else:
         jmeCorrections = None
         print bcolors.OKBLUE, "No module %s will be run" % "jetRecalib", bcolors.ENDC
-
+"""
+#Function definition
+#createJMECorrector(isMC=True, dataYear=2016, runPeriod="B", jesUncert="Total", redoJec=True, saveJets=False, crab=False)
+jmeCorrections = createJMECorrector(isMC, str(dataYear), runPeriod, jesUncert, redojec, False, crab)
 ################################################ MET
 # MET dictionary 
 doJERVar     = True
@@ -213,6 +218,7 @@ elif dataYear == 2018:
     lepSFID   = lambda : lepSFProducerV2(lepFlavour="Muon", cut = "ID", histos=idHisto[dataYear], dataYear=str(dataYear), runPeriod="ABCD", useAbseta=useAbsEta[dataYear], ptEtaAxis=ptEtaAxis[dataYear])
     lepSFISO  = lambda : lepSFProducerV2(lepFlavour="Muon", cut = "ISO", histos=isoHisto[dataYear], dataYear=str(dataYear), runPeriod="ABCD", useAbseta=useAbsEta[dataYear], ptEtaAxis=ptEtaAxis[dataYear])
 
+muModules=[lepSFISO(), lepSFID(), lepSFTrig()]
 ################################################ GEN
 
 Wtypes = ['bare', 'preFSR', 'dress']
@@ -247,7 +253,7 @@ if isMC:
     input_files.append( input_dir+ifileMC )
     if (not genOnly and not trigOnly):
         modules = [puWeightProducer(), 
-                   preSelection(isMC=isMC, passall=passall, dataYear=dataYear), 
+                   preSelection(isMC=isMC, passall=passall, dataYear=dataYear),  
 	           lepSFTrig(),
                    lepSFID(),
                    lepSFISO(),
