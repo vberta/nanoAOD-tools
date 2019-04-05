@@ -7,11 +7,6 @@ ROOT.PyConfig.IgnoreCommandLineOptions = True
 from PhysicsTools.NanoAODTools.postprocessing.framework.datamodel import Collection
 from PhysicsTools.NanoAODTools.postprocessing.framework.eventloop import Module
 
-#muFileDict={ '2016' : ['RunBCDEF_SF_', 'RunGH_SF_'],
-#             '2017' : ['RunBCDEF_SF_'],
-#             '2018' : ['RunABCD_SF_']
-#           }
-
 class lepSFProducerV2(Module):
     def __init__(self, lepFlavour="Muon", cut= "Trigger", histos=["IsoMu24_OR_IsoTkMu24_PtEtaBins/pt_abseta_ratio"], useAbseta=True, ptEtaAxis=True,dataYear="2016", runPeriod="B"):
         self.lepFlavour = lepFlavour
@@ -89,7 +84,7 @@ class lepSFProducerV2(Module):
 
         sf_lep_statUp   = list(map(add, sf_lep, sf_lep_stat)) 
         sf_lep_statDown = list(map(sub, sf_lep, sf_lep_stat))
-        sf_lep_systUp   = list(map(sub, sf_lep, sf_lep_syst))
+        sf_lep_systUp   = list(map(add, sf_lep, sf_lep_syst))
         sf_lep_systDown = list(map(sub, sf_lep, sf_lep_syst))
 
         self.out.fillBranch(self.branchName + "_SF", sf_lep)
@@ -100,7 +95,5 @@ class lepSFProducerV2(Module):
         return True
 
 # define modules using the syntax 'name = lambda : constructor' to avoid having them loaded when not needed
-
-#lepSF = lambda : lepSFProducer( "LooseWP_2016", "GPMVA90_2016")
 
 lepSFTrigExample = lambda : lepSFProducerV2(lepFlavour="Muon", cut = "Trigger", histos=["IsoMu24_OR_IsoTkMu24_PtEtaBins/pt_abseta_ratio"], dataYear="2016", runPeriod="B")
